@@ -87,7 +87,7 @@ namespace parameters {
 #define UPGRADE_HEIGHT_V2                               1
 #define UPGRADE_HEIGHT_V3                               2
 #define UPGRADE_HEIGHT_V4                               17500
-#define UPGRADE_HEIGHT_V5                               44000
+#define UPGRADE_HEIGHT_V5                               150000
 
 #define UPGRADE_VOTING_THRESHOLD                        90
 #define UPGRADE_VOTING_WINDOW                           EXPECTED_NUMBER_OF_BLOCKS_PER_DAY
@@ -142,6 +142,7 @@ namespace parameters {
 const std::initializer_list<const char*> SEED_NODES {
    "46.101.195.19:8606",
     "206.189.56.177:8606",
+	"207.154.226.50:8606",
 	"185.45.75.36:8606"
 };
 
@@ -154,7 +155,20 @@ struct CheckpointData {
 __attribute__((unused))
 #endif
 
-const std::initializer_list<CheckpointData> CHECKPOINTS { };
+const std::initializer_list<CheckpointData> CHECKPOINTS {
+  { 1, "ac98a6e9486986bf74f46fa540f935307290f41b5446b4a86e47777206bc6042" },
+  { 2500, "f10324b11b25322955ba890335ee135d83e41d53a8e4f57da678a5ce25d086d2" },
+  { 5000, "ff6ec01f2f62accf724dd731c083bf275a6d386b4f95658fc76b84c17057eda0" },
+  {11000, "4aaa9bb347414f7bd19d64148d263ae47417e8cc934c2bdf5284d1b7ac2b9fe3" },
+  {17500, "1acb57fa10d191c77694a532271c56fb6ec810f604a4c5ac16a9c26c726a2a4a"},
+  {17501, "f3ad14f4d19e2b687429b45872543e7251d71874880bb58f5de702c0ba0c67e5"},
+  {17502, "2db4cc802094d905ac77ee86fe366ca7af709a261c46e19e78603b60287ab655"},
+  {17503, "df4ac514f27ad6dc0a735ed36e02d676f4cb8baa0b6a20cf8b992378c13ccbed"},
+  {17504, "e771b4952a630c2344141931a9abf2b5e0a92cf73846cc5003d5e662302fd634"},
+  {21791, "1fc05330f5dfc6fa3dff8960e56ba387cf5a47de38c2d0aaa695e43a5bad4975"},
+  {21793, "65bebfdfca309f357a13f12b346a3088ee8e1d331751a33b047f079d8d829089"}
+
+  };
 
 } // CryptoNote
 
