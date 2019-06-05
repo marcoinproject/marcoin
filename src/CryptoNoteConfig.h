@@ -87,7 +87,7 @@ namespace parameters {
 #define UPGRADE_HEIGHT_V2                               1
 #define UPGRADE_HEIGHT_V3                               2
 #define UPGRADE_HEIGHT_V4                               17500
-#define UPGRADE_HEIGHT_V5                               150000
+#define UPGRADE_HEIGHT_V5                               44000
 
 #define UPGRADE_VOTING_THRESHOLD                        90
 #define UPGRADE_VOTING_WINDOW                           EXPECTED_NUMBER_OF_BLOCKS_PER_DAY
