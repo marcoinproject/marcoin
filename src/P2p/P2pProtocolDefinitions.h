@@ -1,29 +1,25 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
 #include "P2pProtocolTypes.h"
 
+#include <boost/uuid/uuid.hpp>
+
 #include "crypto/crypto.h"
-#include "CryptoNoteConfig.h"
-#include "CryptoNoteCore/CoreStatistics.h"
+#include <config/CryptoNoteConfig.h>
 
 // new serialization
 #include "Serialization/ISerializer.h"
 #include "Serialization/SerializationOverloads.h"
-#include "CryptoNoteCore/CryptoNoteSerialization.h"
+#include "Serialization/CryptoNoteSerialization.h"
 
 namespace CryptoNote
 {
-  inline bool serialize(uuid& v, Common::StringView name, ISerializer& s) {
+  inline bool serialize(boost::uuids::uuid& v, Common::StringView name, ISerializer& s) {
     return s.binary(&v, sizeof(v), name);
   }
 
@@ -45,19 +41,13 @@ namespace CryptoNote
     uint32_t send_peerlist_sz;
   };
 
-  enum P2PProtocolVersion : uint8_t {
-    V0 = 0,
-    V1 = 1,
-    CURRENT = V1
-  };
-
   struct basic_node_data
   {
-    uuid network_id;
+    boost::uuids::uuid network_id;
     uint8_t version;
     uint64_t local_time;
     uint32_t my_port;
-    PeerIdType peer_id;
+    uint64_t peer_id;
 
     void serialize(ISerializer& s) {
       KV_MEMBER(network_id)
@@ -70,7 +60,7 @@ namespace CryptoNote
       KV_MEMBER(my_port)
     }
   };
-  
+
   struct CORE_SYNC_DATA
   {
     uint32_t current_height;
@@ -107,7 +97,7 @@ namespace CryptoNote
     {
       basic_node_data node_data;
       CORE_SYNC_DATA payload_data;
-      std::list<PeerlistEntry> local_peerlist; 
+      std::list<PeerlistEntry> local_peerlist;
 
       void serialize(ISerializer& s) {
         KV_MEMBER(node_data)
@@ -156,7 +146,7 @@ namespace CryptoNote
   struct COMMAND_PING
   {
     /*
-      Used to make "callback" connection, to be sure that opponent node 
+      Used to make "callback" connection, to be sure that opponent node
       have accessible connection point. Only other nodes can add peer to peerlist,
       and ONLY in case when peer has accepted connection and answered to ping.
     */
@@ -173,7 +163,7 @@ namespace CryptoNote
     struct response
     {
       std::string status;
-      PeerIdType peer_id;
+      uint64_t peer_id;
 
       void serialize(ISerializer& s) {
         KV_MEMBER(status)
@@ -181,7 +171,4 @@ namespace CryptoNote
       }
     };
   };
-
-  
-
 }

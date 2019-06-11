@@ -1,16 +1,23 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "UpgradeManager.h"
 
-#include "CryptoNoteConfig.h"
+#include <config/CryptoNoteConfig.h>
 
 namespace CryptoNote {
 
@@ -21,24 +28,13 @@ UpgradeManager::~UpgradeManager() {
 }
 
 void UpgradeManager::addMajorBlockVersion(uint8_t targetVersion, uint32_t upgradeHeight) {
-//printf("addMajorBlockVersion: targetVersion:%lu   upgradeHeight:%lu\n",targetVersion,upgradeHeight);
-
   assert(m_upgradeDetectors.empty() || m_upgradeDetectors.back()->targetVersion() < targetVersion);
   m_upgradeDetectors.emplace_back(makeUpgradeDetector(targetVersion, upgradeHeight));
 }
 
 uint8_t UpgradeManager::getBlockMajorVersion(uint32_t blockIndex) const {
   for (auto it = m_upgradeDetectors.rbegin(); it != m_upgradeDetectors.rend(); ++it) {
-
-//printf("UpgradeManager.cpp getBlockMajorVersion: it->get()->upgradeIndex():%lu   blockIndex:%lu\n", it->get()->upgradeIndex(),blockIndex);
-
-
     if (it->get()->upgradeIndex() < blockIndex) {
-
-//printf("it->get()->targetVersion():%lu\n",it->get()->targetVersion());
-
-
-
       return it->get()->targetVersion();
     }
   }

@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonOutputStreamSerializer.h"
 #include <cassert>
@@ -65,7 +72,7 @@ void JsonOutputStreamSerializer::endObject() {
   chain.pop_back();
 }
 
-bool JsonOutputStreamSerializer::beginArray(size_t& size, Common::StringView name) {
+bool JsonOutputStreamSerializer::beginArray(uint64_t& size, Common::StringView name) {
   JsonValue val(JsonValue::ARRAY);
   JsonValue& res = chain.back()->insert(std::string(name), val);
   chain.push_back(&res);
@@ -127,7 +134,7 @@ bool JsonOutputStreamSerializer::operator()(bool& value, Common::StringView name
   return true;
 }
 
-bool JsonOutputStreamSerializer::binary(void* value, size_t size, Common::StringView name) {
+bool JsonOutputStreamSerializer::binary(void* value, uint64_t size, Common::StringView name) {
   std::string hex = Common::toHex(value, size);
   return (*this)(hex, name);
 }

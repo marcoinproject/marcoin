@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -30,6 +37,7 @@ const int errInvalidRequest = -32600;
 const int errMethodNotFound = -32601;
 const int errInvalidParams = -32602;
 const int errInternalError = -32603;
+const int errInvalidPassword = -32604;
 
 class JsonRpcError: public std::exception {
 public:
@@ -55,6 +63,7 @@ public:
 };
 
 typedef boost::optional<Common::JsonValue> OptionalId;
+typedef boost::optional<Common::JsonValue> OptionalPassword;
 
 class JsonRpcRequest {
 public:
@@ -76,6 +85,10 @@ public:
 
     if (psReq.contains("id")) {
       id = psReq("id");
+    }
+	
+	if (psReq.contains("password")) {
+		password = psReq("password");
     }
 
     return true;
@@ -105,6 +118,10 @@ public:
   const OptionalId& getId() const {
     return id;
   }
+  
+  const OptionalPassword& getPassword() const {
+	  return password;
+  }
 
   std::string getBody() {
     psReq.set("jsonrpc", std::string("2.0"));
@@ -116,6 +133,7 @@ private:
 
   Common::JsonValue psReq;
   OptionalId id;
+  OptionalPassword password;
   std::string method;
 };
 

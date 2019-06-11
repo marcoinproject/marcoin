@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -54,7 +61,7 @@ public:
   JsonValue(Real value);
   JsonValue(const String& value);
   JsonValue(String&& value);
-  template<size_t size> JsonValue(const char(&value)[size]) {
+  template<uint64_t size> JsonValue(const char(&value)[size]) {
     new(valueString)String(value, size - 1);
     type = STRING;
   }
@@ -73,7 +80,7 @@ public:
   JsonValue& operator=(Real value);
   JsonValue& operator=(const String& value);
   JsonValue& operator=(String&& value);
-  template<size_t size> JsonValue& operator=(const char(&value)[size]) {
+  template<uint64_t size> JsonValue& operator=(const char(&value)[size]) {
     if (type != STRING) {
       destructValue();
       type = NIL;
@@ -87,28 +94,22 @@ public:
   }
 
   bool isArray() const;
-  bool isBool() const;
   bool isInteger() const;
-  bool isNil() const;
   bool isObject() const;
-  bool isReal() const;
   bool isString() const;
 
   Type getType() const;
-  Array& getArray();
-  const Array& getArray() const;
   Bool getBool() const;
   Integer getInteger() const;
   Object& getObject();
   const Object& getObject() const;
-  Real getReal() const;
   String& getString();
   const String& getString() const;
 
-  size_t size() const;
+  uint64_t size() const;
 
-  JsonValue& operator[](size_t index);
-  const JsonValue& operator[](size_t index) const;
+  JsonValue& operator[](uint64_t index);
+  const JsonValue& operator[](uint64_t index) const;
   JsonValue& pushBack(const JsonValue& value);
   JsonValue& pushBack(JsonValue&& value);
 
@@ -122,7 +123,7 @@ public:
   JsonValue& set(const Key& key, const JsonValue& value);
   JsonValue& set(const Key& key, JsonValue&& value);
 
-  size_t erase(const Key& key);
+  uint64_t erase(const Key& key);
 
   static JsonValue fromString(const std::string& source);
   std::string toString() const;

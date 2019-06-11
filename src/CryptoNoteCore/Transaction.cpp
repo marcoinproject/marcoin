@@ -1,24 +1,32 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ITransaction.h"
 #include "TransactionApiExtra.h"
 #include "TransactionUtils.h"
 
 #include "Account.h"
-#include "CryptoNoteCore/CryptoNoteTools.h"
-#include "CryptoNoteConfig.h"
+#include "Common/CryptoNoteTools.h"
+#include <config/CryptoNoteConfig.h>
 
 #include <boost/optional.hpp>
 #include <numeric>
 #include <unordered_set>
+#include <memory>
 
 using namespace Crypto;
 
@@ -72,18 +80,12 @@ namespace CryptoNote {
     virtual size_t getRequiredSignaturesCount(size_t index) const override;
     virtual bool findOutputsToAccount(const AccountPublicAddress& addr, const SecretKey& viewSecretKey, std::vector<uint32_t>& outs, uint64_t& outputAmount) const override;
 
-    // various checks
-    virtual bool validateInputs() const override;
-    virtual bool validateOutputs() const override;
-    virtual bool validateSignatures() const override;
-
     // get serialized transaction
     virtual BinaryArray getTransactionData() const override;
 
     // ITransactionWriter
 
     virtual void setUnlockTime(uint64_t unlockTime) override;
-    virtual void setPaymentId(const Hash& hash) override;
     virtual void setExtraNonce(const BinaryArray& nonce) override;
     virtual void appendExtra(const BinaryArray& extraData) override;
 
@@ -95,10 +97,6 @@ namespace CryptoNote {
     virtual size_t addOutput(uint64_t amount, const KeyOutput& out) override;
 
     virtual void signInputKey(size_t input, const TransactionTypes::InputKeyInfo& info, const KeyPair& ephKeys) override;
-
-    // secret key
-    virtual bool getTransactionSecretKey(SecretKey& key) const override;
-    virtual void setTransactionSecretKey(const SecretKey& key) override;
 
   private:
 
@@ -187,7 +185,7 @@ namespace CryptoNote {
   }
 
   PublicKey TransactionImpl::getTransactionPublicKey() const {
-    PublicKey pk(NULL_PUBLIC_KEY);
+    PublicKey pk(Constants::NULL_PUBLIC_KEY);
     extra.getPublicKey(pk);
     return pk;
   }
@@ -200,29 +198,6 @@ namespace CryptoNote {
     checkIfSigning();
     transaction.unlockTime = unlockTime;
     invalidateHash();
-  }
-
-  bool TransactionImpl::getTransactionSecretKey(SecretKey& key) const {
-    if (!secretKey) {
-      return false;
-    }
-    key = reinterpret_cast<const SecretKey&>(secretKey.get());
-    return true;
-  }
-
-  void TransactionImpl::setTransactionSecretKey(const SecretKey& key) {
-    const auto& sk = reinterpret_cast<const SecretKey&>(key);
-    PublicKey pk;
-    PublicKey txPubKey;
-
-    secret_key_to_public_key(sk, pk);
-    extra.getPublicKey(txPubKey);
-
-    if (txPubKey != pk) {
-      throw std::runtime_error("Secret transaction key does not match public key");
-    }
-
-    secretKey = key;
   }
 
   size_t TransactionImpl::addInput(const KeyInput& input) {
@@ -278,24 +253,22 @@ namespace CryptoNote {
     const auto& input = boost::get<KeyInput>(getInputChecked(transaction, index, TransactionTypes::InputType::Key));
     Hash prefixHash = getTransactionPrefixHash();
 
-    std::vector<Signature> signatures;
-    std::vector<const PublicKey*> keysPtrs;
+    std::vector<PublicKey> publicKeys;
 
     for (const auto& o : info.outputs) {
-      keysPtrs.push_back(reinterpret_cast<const PublicKey*>(&o.targetKey));
+        publicKeys.push_back(o.targetKey);
     }
 
-    signatures.resize(keysPtrs.size());
-
-    generate_ring_signature(
-      reinterpret_cast<const Hash&>(prefixHash),
-      reinterpret_cast<const KeyImage&>(input.keyImage),
-      keysPtrs,
-      reinterpret_cast<const SecretKey&>(ephKeys.secretKey),
-      info.realOutput.transactionIndex,
-      signatures.data());
+    const auto [success, signatures] = crypto_ops::generateRingSignatures(
+        prefixHash,
+        input.keyImage,
+        publicKeys,
+        ephKeys.secretKey,
+        info.realOutput.transactionIndex
+    );
 
     getSignatures(index) = signatures;
+
     invalidateHash();
   }
 
@@ -314,13 +287,6 @@ namespace CryptoNote {
 
   BinaryArray TransactionImpl::getTransactionData() const {
     return toBinaryArray(transaction);
-  }
-
-  void TransactionImpl::setPaymentId(const Hash& hash) {
-    checkIfSigning();
-    BinaryArray paymentIdBlob;
-    setPaymentIdToTransactionExtraNonce(paymentIdBlob, reinterpret_cast<const Hash&>(hash));
-    setExtraNonce(paymentIdBlob);
   }
 
   bool TransactionImpl::getPaymentId(Hash& hash) const {
@@ -404,32 +370,5 @@ namespace CryptoNote {
 
   size_t TransactionImpl::getRequiredSignaturesCount(size_t index) const {
     return ::getRequiredSignaturesCount(getInputChecked(transaction, index));
-  }
-
-  bool TransactionImpl::validateInputs() const {
-    return
-      checkInputTypesSupported(transaction) &&
-      checkInputsOverflow(transaction) &&
-      checkInputsKeyimagesDiff(transaction);
-  }
-
-  bool TransactionImpl::validateOutputs() const {
-    return
-      checkOutsValid(transaction) &&
-      checkOutsOverflow(transaction);
-  }
-
-  bool TransactionImpl::validateSignatures() const {
-    if (transaction.signatures.size() < transaction.inputs.size()) {
-      return false;
-    }
-
-    for (size_t i = 0; i < transaction.inputs.size(); ++i) {
-      if (getRequiredSignaturesCount(i) > transaction.signatures[i].size()) {
-        return false;
-      }
-    }
-
-    return true;
   }
 }

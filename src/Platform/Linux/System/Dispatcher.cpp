@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Dispatcher.h"
 #include <cassert>
@@ -95,11 +102,13 @@ Dispatcher::Dispatcher() {
         }
 
         auto result = close(remoteSpawnEvent);
+        if (result) {}
         assert(result == 0);
       }
     }
 
     auto result = close(epoll);
+    if (result) {}
     assert(result == 0);
   }
 
@@ -126,11 +135,13 @@ Dispatcher::~Dispatcher() {
 
   while (!timers.empty()) {
     int result = ::close(timers.top());
+    if (result) {}
     assert(result == 0);
     timers.pop();
   }
 
   auto result = close(epoll);
+  if (result) {}
   assert(result == 0);
   result = close(remoteSpawnEvent);
   assert(result == 0);
@@ -166,7 +177,7 @@ void Dispatcher::dispatch() {
 
       assert(context->inExecutionQueue);
       context->inExecutionQueue = false;
-
+      
       break;
     }
 
@@ -326,15 +337,21 @@ void Dispatcher::yield() {
         }
 
         if ((events[i].events & EPOLLOUT) != 0) {
-          contextPair->writeContext->context->interruptProcedure = nullptr;
-          pushContext(contextPair->writeContext->context);
-          contextPair->writeContext->events = events[i].events;
+          if (contextPair->writeContext != nullptr) {
+            if (contextPair->writeContext->context != nullptr) {
+              contextPair->writeContext->context->interruptProcedure = nullptr;
+            }
+            pushContext(contextPair->writeContext->context);
+            contextPair->writeContext->events = events[i].events;
+          }
         } else if ((events[i].events & EPOLLIN) != 0) {
-          contextPair->readContext->context->interruptProcedure = nullptr;
-          pushContext(contextPair->readContext->context);
-          contextPair->readContext->events = events[i].events;
-        } else if ((events[i].events & (EPOLLERR | EPOLLHUP)) != 0) {
-          throw std::runtime_error("Dispatcher::dispatch, events & (EPOLLERR | EPOLLHUP) != 0");
+          if (contextPair->readContext != nullptr) {
+            if (contextPair->readContext->context != nullptr) {
+              contextPair->readContext->context->interruptProcedure = nullptr;
+            }
+            pushContext(contextPair->readContext->context);
+            contextPair->readContext->events = events[i].events;
+          }
         } else {
           continue;
         }

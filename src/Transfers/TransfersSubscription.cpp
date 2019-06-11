@@ -1,15 +1,22 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "IWallet.h"
 #include "TransfersSubscription.h"
-#include "IWalletLegacy.h"
 #include "CryptoNoteCore/CryptoNoteBasicImpl.h"
 
 using namespace Crypto;
@@ -17,7 +24,7 @@ using namespace Logging;
 
 namespace CryptoNote {
 
-TransfersSubscription::TransfersSubscription(const CryptoNote::Currency& currency, Logging::ILogger& logger, const AccountSubscription& sub)
+TransfersSubscription::TransfersSubscription(const CryptoNote::Currency& currency, std::shared_ptr<Logging::ILogger> logger, const AccountSubscription& sub)
   : subscription(sub), logger(logger, "TransfersSubscription"), transfers(currency, logger, sub.transactionSpendableAge),
     m_address(currency.accountAddressAsString(sub.keys.address)) {
 }
@@ -36,7 +43,7 @@ void TransfersSubscription::onBlockchainDetach(uint32_t height) {
 }
 
 void TransfersSubscription::onError(const std::error_code& ec, uint32_t height) {
-  if (height != WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT) {
+  if (height != WALLET_UNCONFIRMED_TRANSACTION_HEIGHT) {
   transfers.detach(height);
   }
   m_observerManager.notify(&ITransfersObserver::onError, this, height, ec);

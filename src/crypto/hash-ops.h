@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -17,7 +24,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../Common/static_assert.h"
 #include "Common/int-util.h"
 
 static inline void *padd(void *p, size_t i) {
@@ -53,12 +59,12 @@ void hash_process(union hash_state *state, const uint8_t *buf, size_t count);
 enum {
   HASH_SIZE = 32,
   HASH_DATA_AREA = 136,
-  SLOW_HASH_CONTEXT_SIZE = 2097552
+  SLOW_HASH_CONTEXT_SIZE = 2097552,
+  SLOW_HASH_CONTEXT_LITE_SIZE = 1048976  // Suml: Unused for now but this is the right size for 1MB scratchpads.
 };
 
 void cn_fast_hash(const void *data, size_t length, char *hash);
-
-void cn_slow_hash_f(void *, const void *, size_t, void *, size_t);
+void cn_slow_hash(const void *data, size_t length, char *hash, int light, int variant, int prehashed, uint32_t page_size, uint32_t scratchpad, uint32_t iterations);
 
 void hash_extra_blake(const void *data, size_t length, char *hash);
 void hash_extra_groestl(const void *data, size_t length, char *hash);

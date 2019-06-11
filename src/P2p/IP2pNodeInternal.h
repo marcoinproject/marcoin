@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -20,9 +27,9 @@ class P2pContext;
 class IP2pNodeInternal {
 public:
   virtual const CORE_SYNC_DATA& getGenesisPayload() const = 0;
-  virtual std::list<PeerlistEntry> getLocalPeerList() const = 0;
+  virtual std::list<PeerlistEntry> getLocalPeerList() = 0;
   virtual basic_node_data getNodeData() const = 0;
-  virtual PeerIdType getPeerId() const = 0;
+  virtual uint64_t getPeerId() const = 0;
 
   virtual void handleNodeData(const basic_node_data& node, P2pContext& ctx) = 0;
   virtual bool handleRemotePeerList(const std::list<PeerlistEntry>& peerlist, time_t local_time) = 0;

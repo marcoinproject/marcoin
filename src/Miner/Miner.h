@@ -1,60 +1,57 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
 #include <atomic>
 #include <thread>
+#include <mutex>
 
 #include <System/Dispatcher.h>
 #include <System/Event.h>
 #include <System/RemoteContext.h>
 
 #include "CryptoNote.h"
-#include "CryptoNoteCore/Difficulty.h"
-
-#include "Logging/LoggerRef.h"
 
 namespace CryptoNote {
 
-struct BlockMiningParameters {
-  BlockTemplate blockTemplate;
-  Difficulty difficulty;
+struct BlockMiningParameters
+{
+    BlockTemplate blockTemplate;
+    uint64_t difficulty;
 };
 
-class Miner {
-public:
-  Miner(System::Dispatcher& dispatcher, Logging::ILogger& logger);
-  ~Miner();
+class Miner
+{
+    public:
+        Miner(System::Dispatcher& dispatcher);
 
-  BlockTemplate mine(const BlockMiningParameters& blockMiningParameters, size_t threadCount);
+        BlockTemplate mine(const BlockMiningParameters& blockMiningParameters, size_t threadCount);
+        uint64_t getHashCount();
 
-  //NOTE! this is blocking method
-  void stop();
+        //NOTE! this is blocking method
+        void stop();
 
-private:
-  System::Dispatcher& m_dispatcher;
-  System::Event m_miningStopped;
+    private:
+        System::Dispatcher& m_dispatcher;
+        System::Event m_miningStopped;
 
-  enum class MiningState : uint8_t { MINING_STOPPED, BLOCK_FOUND, MINING_IN_PROGRESS};
-  std::atomic<MiningState> m_state;
+        enum class MiningState : uint8_t { MINING_STOPPED, BLOCK_FOUND, MINING_IN_PROGRESS};
+        std::atomic<MiningState> m_state;
 
-  std::vector<std::unique_ptr<System::RemoteContext<void>>>  m_workers;
+        std::vector<std::unique_ptr<System::RemoteContext<void>>>  m_workers;
 
-  BlockTemplate m_block;
+        BlockTemplate m_block;
+        std::atomic<uint64_t> m_hash_count = 0;
+        std::mutex m_hashes_mutex;
 
-  Logging::LoggerRef m_logger;
-
-  void runWorkers(BlockMiningParameters blockMiningParameters, size_t threadCount);
-  void workerFunc(const BlockTemplate& blockTemplate, Difficulty difficulty, uint32_t nonceStep, int threadnum);
-  bool setStateBlockFound();
+        void runWorkers(BlockMiningParameters blockMiningParameters, size_t threadCount);
+        void workerFunc(const BlockTemplate& blockTemplate, uint64_t difficulty, uint32_t nonceStep);
+        bool setStateBlockFound();
+        void incrementHashCount();
 };
 
 } //namespace CryptoNote

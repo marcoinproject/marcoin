@@ -1,19 +1,28 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Util.h"
+
 #include <cstdio>
+#include <cstring>
 
-#include <boost/filesystem.hpp>
+#include <Common/FileSystemShim.h>
 
-#include "CryptoNoteConfig.h"
+#include <config/CryptoNoteConfig.h>
 
 #ifdef WIN32
 #ifndef NOMINMAX
@@ -22,7 +31,7 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <strsafe.h>
-#else
+#else 
 #include <sys/utsname.h>
 #endif
 
@@ -55,13 +64,13 @@ namespace Tools
     // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
 
     pGNSI = (PGNSI) GetProcAddress(
-      GetModuleHandle(TEXT("kernel32.dll")),
+      GetModuleHandle(TEXT("kernel32.dll")), 
       "GetNativeSystemInfo");
     if(NULL != pGNSI)
       pGNSI(&si);
     else GetSystemInfo(&si);
 
-    if ( VER_PLATFORM_WIN32_NT==osvi.dwPlatformId &&
+    if ( VER_PLATFORM_WIN32_NT==osvi.dwPlatformId && 
       osvi.dwMajorVersion > 4 )
     {
       StringCchCopy(pszOS, BUFSIZE, TEXT("Microsoft "));
@@ -85,7 +94,7 @@ namespace Tools
         }
 
         pGPI = (PGPI) GetProcAddress(
-          GetModuleHandle(TEXT("kernel32.dll")),
+          GetModuleHandle(TEXT("kernel32.dll")), 
           "GetProductInfo");
 
         pGPI( osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
@@ -215,7 +224,7 @@ namespace Tools
         {
           StringCchCat(pszOS, BUFSIZE, TEXT( "Professional" ));
         }
-        else
+        else 
         {
           if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
             StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Server" ));
@@ -227,7 +236,7 @@ namespace Tools
 
       // Include service pack (if any) and build number.
 
-      if( strlen(osvi.szCSDVersion) > 0 )
+      if(std::strlen(osvi.szCSDVersion) > 0 )
       {
         StringCchCat(pszOS, BUFSIZE, TEXT(" ") );
         StringCchCat(pszOS, BUFSIZE, osvi.szCSDVersion);
@@ -246,10 +255,10 @@ namespace Tools
           StringCchCat(pszOS, BUFSIZE, TEXT(", 32-bit"));
       }
 
-      return pszOS;
+      return pszOS; 
     }
     else
-    {
+    {  
       printf( "This sample does not support this version of Windows.\n");
       return pszOS;
     }
@@ -281,7 +290,6 @@ std::string get_nix_version_display_string()
 #ifdef WIN32
   std::string get_special_folder_path(int nfolder, bool iscreate)
   {
-    namespace fs = boost::filesystem;
     char psz_path[MAX_PATH] = "";
 
     if(SHGetSpecialFolderPathA(NULL, psz_path, nfolder, iscreate)) {
@@ -294,7 +302,6 @@ std::string get_nix_version_display_string()
 
   std::string getDefaultDataDirectory()
   {
-    //namespace fs = boost::filesystem;
     // Windows < Vista: C:\Documents and Settings\Username\Application Data\CRYPTONOTE_NAME
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\CRYPTONOTE_NAME
     // Mac: ~/Library/Application Support/CRYPTONOTE_NAME
@@ -302,79 +309,37 @@ std::string get_nix_version_display_string()
     std::string config_folder;
 #ifdef WIN32
     // Windows
-    config_folder = (get_special_folder_path(CSIDL_APPDATA, true) + "/" + CRYPTONOTE_NAME);
+    config_folder = get_special_folder_path(CSIDL_APPDATA, true) + "/" + CryptoNote::CRYPTONOTE_NAME;
 #else
     std::string pathRet;
     char* pszHome = getenv("HOME");
-    if (pszHome == NULL || strlen(pszHome) == 0)
+    if (pszHome == NULL || std::strlen(pszHome) == 0)
       pathRet = "/";
     else
       pathRet = pszHome;
 #ifdef MAC_OSX
     // Mac
     pathRet /= "Library/Application Support";
-    config_folder =  (pathRet + "/" + CRYPTONOTE_NAME);
+    config_folder =  (pathRet + "/" + CryptoNote::CRYPTONOTE_NAME);
 #else
     // Unix
-    config_folder = (pathRet + "/." + CRYPTONOTE_NAME);
+    config_folder = (pathRet + "/." + CryptoNote::CRYPTONOTE_NAME);
 #endif
 #endif
 
     return config_folder;
   }
 
-  std::string getDefaultCacheFile(const std::string& dataDir) {
-    static const std::string name = "cache_file";
-
-    namespace bf = boost::filesystem;
-    bf::path dir = dataDir;
-
-    if (!bf::exists(dir) ) {
-      throw std::runtime_error("Directory \"" + dir.string() + "\" doesn't exist");
-    }
-
-    if (!bf::exists(dir/name)) {
-      throw std::runtime_error("File \"" + boost::filesystem::path(dir/name).string() + "\" doesn't exist");
-    }
-
-    return boost::filesystem::path(dir/name).string();
-  }
-
   bool create_directories_if_necessary(const std::string& path)
   {
-    namespace fs = boost::filesystem;
-    boost::system::error_code ec;
-    fs::path fs_path(path);
-    if (fs::is_directory(fs_path, ec)) {
-      return true;
-    }
-
-    return fs::create_directories(fs_path, ec);
+      std::error_code e;
+      fs::create_directories(path, e);
+      return e.value() == 0;
   }
 
-  std::error_code replace_file(const std::string& replacement_name, const std::string& replaced_name)
+  bool directoryExists(const std::string &path)
   {
-    int code;
-#if defined(WIN32)
-    // Maximizing chances for success
-    DWORD attributes = ::GetFileAttributes(replaced_name.c_str());
-    if (INVALID_FILE_ATTRIBUTES != attributes)
-    {
-      ::SetFileAttributes(replaced_name.c_str(), attributes & (~FILE_ATTRIBUTE_READONLY));
-    }
-
-    bool ok = 0 != ::MoveFileEx(replacement_name.c_str(), replaced_name.c_str(), MOVEFILE_REPLACE_EXISTING);
-    code = ok ? 0 : static_cast<int>(::GetLastError());
-#else
-    bool ok = 0 == std::rename(replacement_name.c_str(), replaced_name.c_str());
-    code = ok ? 0 : errno;
-#endif
-    return std::error_code(code, std::system_category());
+      std::error_code e;
+      return fs::is_directory(path, e);
   }
-
-  bool directoryExists(const std::string& path) {
-    boost::system::error_code ec;
-    return boost::filesystem::is_directory(path, ec);
-  }
-
 }

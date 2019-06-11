@@ -1,19 +1,15 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Marcoin Developers
+// 
+// Please see the included LICENSE file for more information.
 
 #include "TransactionValidatiorState.h"
 
 namespace CryptoNote {
 
-void mergeStates(TransactionValidatorState& destionation, const TransactionValidatorState& source) {
-  destionation.spentKeyImages.insert(source.spentKeyImages.begin(), source.spentKeyImages.end());
+void mergeStates(TransactionValidatorState& destination, const TransactionValidatorState& source) {
+  destination.spentKeyImages.insert(source.spentKeyImages.begin(), source.spentKeyImages.end());
 }
 
 bool hasIntersections(const TransactionValidatorState& destination, const TransactionValidatorState& source) {

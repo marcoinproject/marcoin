@@ -1,45 +1,35 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
-
-#include "Common/SignalHandler.h"
-
-#include "Logging/LoggerGroup.h"
-#include "Logging/ConsoleLogger.h"
-#include "Logging/LoggerRef.h"
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #include "MinerManager.h"
 
 #include <System/Dispatcher.h>
 
-int main(int argc, char** argv) {
-  try {
-    CryptoNote::MiningConfig config;
-    config.parse(argc, argv);
+int main(int argc, char **argv)
+{
+    while (true)
+    {
+        CryptoNote::MiningConfig config;
+        config.parse(argc, argv);
 
-    if (config.help) {
-      config.printHelp();
-      return 0;
+        try
+        {
+            System::Dispatcher dispatcher;
+
+            auto httpClient = std::make_shared<httplib::Client>(
+                config.daemonHost.c_str(), config.daemonPort, 10 /* 10 second timeout */
+            );
+
+            Miner::MinerManager app(dispatcher, config, httpClient);
+
+            app.start();
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << "Unhandled exception caught: " << e.what()
+                      << "\nAttempting to relaunch..." << std::endl;
+        }
     }
-
-    Logging::LoggerGroup loggerGroup;
-    Logging::ConsoleLogger consoleLogger(static_cast<Logging::Level>(config.logLevel));
-    loggerGroup.addLogger(consoleLogger);
-
-    System::Dispatcher dispatcher;
-    Miner::MinerManager app(dispatcher, config, loggerGroup);
-
-    app.start();
-  } catch (std::exception& e) {
-    std::cerr << "Fatal: " << e.what() << std::endl;
-    return 1;
-  }
-
-  return 0;
 }

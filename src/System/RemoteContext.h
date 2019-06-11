@@ -1,19 +1,28 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include <cassert>
+
+#include <future>
+
 #include <System/Dispatcher.h>
 #include <System/Event.h>
-#include <System/Future.h>
 #include <System/InterruptedException.h>
 
 namespace System {
@@ -22,7 +31,7 @@ template<class T = void> class RemoteContext {
 public:
   // Start a thread, execute operation in it, continue execution of current context.
   RemoteContext(Dispatcher& d, std::function<T()>&& operation)
-      : dispatcher(d), event(d), procedure(std::move(operation)), future(System::Detail::async<T>([this] { return asyncProcedure(); })), interrupted(false) {
+      : dispatcher(d), event(d), procedure(std::move(operation)), future(std::async(std::launch::async, [this] { return asyncProcedure(); })), interrupted(false) {
   }
 
   // Run other task on dispatcher until future is ready, then return lambda's result, or rethrow exception. UB if called more than once.
@@ -88,7 +97,7 @@ private:
   Dispatcher& dispatcher;
   mutable Event event;
   std::function<T()> procedure;
-  mutable System::Detail::Future<T> future;
+  mutable std::future<T> future;
   mutable bool interrupted;
 };
 

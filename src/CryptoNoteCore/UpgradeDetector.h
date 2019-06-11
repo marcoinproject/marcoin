@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -18,7 +25,7 @@
 #include "CryptoNoteCore/CryptoNoteBasicImpl.h"
 #include "CryptoNoteCore/CryptoNoteFormatUtils.h"
 #include "CryptoNoteCore/Currency.h"
-#include "CryptoNoteConfig.h"
+#include <config/CryptoNoteConfig.h>
 #include <Logging/LoggerRef.h>
 
 namespace CryptoNote {
@@ -34,7 +41,7 @@ namespace CryptoNote {
   template <typename BC>
   class BasicUpgradeDetector : public UpgradeDetectorBase {
   public:
-    BasicUpgradeDetector(const Currency& currency, BC& blockchain, uint8_t targetVersion, Logging::ILogger& log) :
+    BasicUpgradeDetector(const Currency& currency, BC& blockchain, uint8_t targetVersion, std::shared_ptr<Logging::ILogger> log) :
       m_currency(currency),
       m_blockchain(blockchain),
       m_targetVersion(targetVersion),
@@ -43,10 +50,6 @@ namespace CryptoNote {
 
     bool init() {
       uint32_t upgradeHeight = m_currency.upgradeHeight(m_targetVersion);
-
-//printf("BasicUpgradeDetector Upgrade Height:%lu",upgradeHeight);
-
-
       if (upgradeHeight == UNDEF_HEIGHT) {
         if (m_blockchain.empty()) {
           m_votingCompleteHeight = UNDEF_HEIGHT;
@@ -105,9 +108,6 @@ namespace CryptoNote {
     uint32_t votingCompleteHeight() const { return m_votingCompleteHeight; }
 
     uint32_t upgradeHeight() const {
-
-//printf("upgradedetctor upgradeHeight()\n");
-
       if (m_currency.upgradeHeight(m_targetVersion) == UNDEF_HEIGHT) {
         return m_votingCompleteHeight == UNDEF_HEIGHT ? UNDEF_HEIGHT : m_currency.calculateUpgradeHeight(m_votingCompleteHeight);
       } else {
@@ -116,9 +116,6 @@ namespace CryptoNote {
     }
 
     void blockPushed() {
-
-//printf("upgradedetctor blockPushed\n");
-
       assert(!m_blockchain.empty());
 
       if (m_currency.upgradeHeight(m_targetVersion) != UNDEF_HEIGHT) {
@@ -179,9 +176,6 @@ namespace CryptoNote {
     }
 
     size_t getNumberOfVotes(uint32_t height) {
-
-//printf("In getNumberOfVotes\n");
-
       if (height < m_currency.upgradeVotingWindow() - 1) {
         return 0;
       }
@@ -210,9 +204,6 @@ namespace CryptoNote {
     }
 
     bool isVotingComplete(uint32_t height) {
-
-//printf("In isVotingComplete\n");
-
       assert(m_currency.upgradeHeight(m_targetVersion) == UNDEF_HEIGHT);
       assert(m_currency.upgradeVotingWindow() > 1);
       assert(m_currency.upgradeVotingThreshold() > 0 && m_currency.upgradeVotingThreshold() <= 100);

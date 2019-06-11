@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonValue.h"
 #include <iomanip>
@@ -385,24 +392,12 @@ bool JsonValue::isArray() const {
   return type == ARRAY;
 }
 
-bool JsonValue::isBool() const {
-  return type == BOOL;
-}
-
 bool JsonValue::isInteger() const {
   return type == INTEGER;
 }
 
-bool JsonValue::isNil() const {
-  return type == NIL;
-}
-
 bool JsonValue::isObject() const {
   return type == OBJECT;
-}
-
-bool JsonValue::isReal() const {
-  return type == REAL;
 }
 
 bool JsonValue::isString() const {
@@ -411,22 +406,6 @@ bool JsonValue::isString() const {
 
 JsonValue::Type JsonValue::getType() const {
   return type;
-}
-
-JsonValue::Array& JsonValue::getArray() {
-  if (type != ARRAY) {
-    throw std::runtime_error("JsonValue type is not ARRAY");
-  }
-
-  return *reinterpret_cast<Array*>(valueArray);
-}
-
-const JsonValue::Array& JsonValue::getArray() const {
-  if (type != ARRAY) {
-    throw std::runtime_error("JsonValue type is not ARRAY");
-  }
-
-  return *reinterpret_cast<const Array*>(valueArray);
 }
 
 JsonValue::Bool JsonValue::getBool() const {
@@ -461,14 +440,6 @@ const JsonValue::Object& JsonValue::getObject() const {
   return *reinterpret_cast<const Object*>(valueObject);
 }
 
-JsonValue::Real JsonValue::getReal() const {
-  if (type != REAL) {
-    throw std::runtime_error("JsonValue type is not REAL");
-  }
-
-  return valueReal;
-}
-
 JsonValue::String& JsonValue::getString() {
   if (type != STRING) {
     throw std::runtime_error("JsonValue type is not STRING");
@@ -485,7 +456,7 @@ const JsonValue::String& JsonValue::getString() const {
   return *reinterpret_cast<const String*>(valueString);
 }
 
-size_t JsonValue::size() const {
+uint64_t JsonValue::size() const {
   switch (type) {
   case ARRAY:
     return reinterpret_cast<const Array*>(valueArray)->size();
@@ -496,7 +467,7 @@ size_t JsonValue::size() const {
   }
 }
 
-JsonValue& JsonValue::operator[](size_t index) {
+JsonValue& JsonValue::operator[](uint64_t index) {
   if (type != ARRAY) {
     throw std::runtime_error("JsonValue type is not ARRAY");
   }
@@ -504,7 +475,7 @@ JsonValue& JsonValue::operator[](size_t index) {
   return reinterpret_cast<Array*>(valueArray)->at(index);
 }
 
-const JsonValue& JsonValue::operator[](size_t index) const {
+const JsonValue& JsonValue::operator[](uint64_t index) const {
   if (type != ARRAY) {
     throw std::runtime_error("JsonValue type is not ARRAY");
   }
@@ -560,7 +531,7 @@ JsonValue& JsonValue::set(const Key& key, JsonValue&& value) {
   return *this;
 }
 
-size_t JsonValue::erase(const Key& key) {
+uint64_t JsonValue::erase(const Key& key) {
   return getObject().erase(key);
 }
 
@@ -588,7 +559,7 @@ std::ostream& operator<<(std::ostream& out, const JsonValue& jsonValue) {
     out << '[';
     if (array.size() > 0) {
       out << array[0];
-      for (size_t i = 1; i < array.size(); ++i) {
+      for (uint64_t i = 1; i < array.size(); ++i) {
         out << ',' << array[i];
       }
     }
@@ -804,7 +775,7 @@ void JsonValue::readNull(std::istream& in) {
 void JsonValue::readNumber(std::istream& in, char c) {
   std::string text;
   text += c;
-  size_t dots = 0;
+  uint64_t dots = 0;
   for (;;) {
     int i = in.peek();
     if (i >= '0' && i <= '9') {

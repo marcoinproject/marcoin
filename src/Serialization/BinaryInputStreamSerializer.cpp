@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BinaryInputStreamSerializer.h"
 
@@ -15,6 +22,7 @@
 #include <stdexcept>
 #include <Common/StreamTools.h>
 #include "SerializationOverloads.h"
+#include <config/CryptoNoteConfig.h>
 
 using namespace Common;
 
@@ -40,7 +48,7 @@ bool BinaryInputStreamSerializer::beginObject(Common::StringView name) {
 void BinaryInputStreamSerializer::endObject() {
 }
 
-bool BinaryInputStreamSerializer::beginArray(size_t& size, Common::StringView name) {
+bool BinaryInputStreamSerializer::beginArray(uint64_t& size, Common::StringView name) {
   readVarintAs<uint64_t>(stream, size);
   return true;
 }
@@ -92,6 +100,23 @@ bool BinaryInputStreamSerializer::operator()(std::string& value, Common::StringV
   uint64_t size;
   readVarint(stream, size);
 
+  /* Can't take up more than a block size */
+  if (size > CryptoNote::parameters::MAX_EXTRA_SIZE && std::string(name.getData()) == "mm_tag")
+  {
+    std::vector<char> temp;
+    temp.resize(1);
+
+    /* Read to the end of the stream, and throw the data away, otherwise
+       transaction won't validate. There should be a better way to do this? */
+    while (size > 0) {
+        checkedRead(&temp[0], 1);
+        size--;
+    }
+
+    value.clear();
+    return true;
+  }
+
   if (size > 0) {
     std::vector<char> temp;
     temp.resize(size);
@@ -105,7 +130,7 @@ bool BinaryInputStreamSerializer::operator()(std::string& value, Common::StringV
   return true;
 }
 
-bool BinaryInputStreamSerializer::binary(void* value, size_t size, Common::StringView name) {
+bool BinaryInputStreamSerializer::binary(void* value, uint64_t size, Common::StringView name) {
   checkedRead(static_cast<char*>(value), size);
   return true;
 }
@@ -120,7 +145,7 @@ bool BinaryInputStreamSerializer::operator()(double& value, Common::StringView n
   return false;
 }
 
-void BinaryInputStreamSerializer::checkedRead(char* buf, size_t size) {
+void BinaryInputStreamSerializer::checkedRead(char* buf, uint64_t size) {
   read(stream, buf, size);
 }
 

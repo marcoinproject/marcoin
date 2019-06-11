@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once 
 
@@ -22,7 +29,7 @@ public:
 
   typedef BlockingQueue<T, Container> ThisType;
 
-  BlockingQueue(size_t maxSize = 1) : 
+  BlockingQueue(uint64_t maxSize = 1) : 
     m_maxSize(maxSize), m_closed(false) {}
 
   template <typename TT>
@@ -78,18 +85,18 @@ public:
     }
   }
 
-  size_t size() {
+  uint64_t size() {
     std::unique_lock<std::mutex> lk(m_mutex);
     return m_queue.size();
   }
 
-  size_t capacity() const {
+  uint64_t capacity() const {
     return m_maxSize;
   }
 
 private:
 
-  const size_t m_maxSize;
+  const uint64_t m_maxSize;
   Container m_queue;
   bool m_closed;
   
@@ -102,7 +109,7 @@ template <typename QueueT>
 class GroupClose {
 public:
 
-  GroupClose(QueueT& queue, size_t groupSize)
+  GroupClose(QueueT& queue, uint64_t groupSize)
     : m_queue(queue), m_count(groupSize) {}
 
   void close() {
@@ -114,7 +121,7 @@ public:
 
 private:
 
-  std::atomic<size_t> m_count;
+  std::atomic<uint64_t> m_count;
   QueueT& m_queue;
 
 };

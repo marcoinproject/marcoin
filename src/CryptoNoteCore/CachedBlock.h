@@ -1,23 +1,13 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Marcoin Developers
+// 
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
 #include <boost/optional.hpp>
 #include <CryptoNote.h>
-
-namespace Crypto {
-
-class cn_context;
-
-}
 
 namespace CryptoNote {
 
@@ -27,7 +17,7 @@ public:
   const BlockTemplate& getBlock() const;
   const Crypto::Hash& getTransactionTreeHash() const;
   const Crypto::Hash& getBlockHash() const;
-  const Crypto::Hash& getBlockLongHash(Crypto::cn_context& cryptoContext) const;
+  const Crypto::Hash& getBlockLongHash() const;
   const Crypto::Hash& getAuxiliaryBlockHeaderHash() const;
   const BinaryArray& getBlockHashingBinaryArray() const;
   const BinaryArray& getParentBlockBinaryArray(bool headerOnly) const;

@@ -1,12 +1,8 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Galaxia Project Developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
@@ -22,7 +18,6 @@ enum class TransactionValidationError {
   INPUT_UNKNOWN_TYPE,
   INPUT_EMPTY_OUTPUT_USAGE,
   INPUT_INVALID_DOMAIN_KEYIMAGES,
-  MIXIN_COUNT_TOO_SMALL,
   INPUT_IDENTICAL_KEYIMAGES,
   INPUT_IDENTICAL_OUTPUT_INDEXES,
   INPUT_KEYIMAGE_ALREADY_SPENT,
@@ -40,7 +35,11 @@ enum class TransactionValidationError {
   OUTPUT_UNKNOWN_TYPE,
   OUTPUTS_AMOUNT_OVERFLOW,
   WRONG_AMOUNT,
-  WRONG_TRANSACTION_UNLOCK_TIME
+  WRONG_TRANSACTION_UNLOCK_TIME,
+  INVALID_MIXIN,
+  EXTRA_TOO_LARGE,
+  BASE_INVALID_SIGNATURES_COUNT,
+  INPUT_INVALID_SIGNATURES_COUNT,
 };
 
 // custom category:
@@ -65,10 +64,9 @@ public:
       case TransactionValidationError::INPUT_UNKNOWN_TYPE: return "Transaction has input with unknown type";
       case TransactionValidationError::INPUT_EMPTY_OUTPUT_USAGE: return "Transaction's input uses empty output";
       case TransactionValidationError::INPUT_INVALID_DOMAIN_KEYIMAGES: return "Transaction uses key image not in the valid domain";
-      case TransactionValidationError::MIXIN_COUNT_TOO_SMALL: return "MixIn count is below the required minimum";
       case TransactionValidationError::INPUT_IDENTICAL_KEYIMAGES: return "Transaction has identical key images";
       case TransactionValidationError::INPUT_IDENTICAL_OUTPUT_INDEXES: return "Transaction has identical output indexes";
-      case TransactionValidationError::INPUT_KEYIMAGE_ALREADY_SPENT: return "Transaction uses spent key image";
+      case TransactionValidationError::INPUT_KEYIMAGE_ALREADY_SPENT: return "Transaction is already present in the queue";
       case TransactionValidationError::INPUT_INVALID_GLOBAL_INDEX: return "Transaction has input with invalid global index";
       case TransactionValidationError::INPUT_SPEND_LOCKED_OUT: return "Transaction uses locked input";
       case TransactionValidationError::INPUT_INVALID_SIGNATURES: return "Transaction has input with invalid signature";
@@ -84,6 +82,10 @@ public:
       case TransactionValidationError::OUTPUTS_AMOUNT_OVERFLOW: return "Transaction has outputs amount overflow";
       case TransactionValidationError::WRONG_AMOUNT: return "Transaction wrong amount";
       case TransactionValidationError::WRONG_TRANSACTION_UNLOCK_TIME: return "Transaction has wrong unlock time";
+      case TransactionValidationError::INVALID_MIXIN: return "Mixin too large or too small";
+      case TransactionValidationError::EXTRA_TOO_LARGE: return "Transaction extra too large";
+      case TransactionValidationError::BASE_INVALID_SIGNATURES_COUNT: return "Coinbase transactions must not have input signatures";
+      case TransactionValidationError::INPUT_INVALID_SIGNATURES_COUNT: return "The number of input signatures is not correct";
       default: return "Unknown error";
     }
   }

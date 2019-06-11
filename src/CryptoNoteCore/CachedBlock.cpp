@@ -1,17 +1,13 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #include "CachedBlock.h"
 #include <Common/Varint.h>
-#include "CryptoNoteConfig.h"
-#include "CryptoNoteTools.h"
+#include <config/CryptoNoteConfig.h>
+#include "Common/CryptoNoteTools.h"
 
 using namespace Crypto;
 using namespace CryptoNote;
@@ -50,31 +46,25 @@ const Crypto::Hash& CachedBlock::getBlockHash() const {
   return blockHash.get();
 }
 
-const Crypto::Hash& CachedBlock::getBlockLongHash(cn_context& cryptoContext) const {
-
-
+const Crypto::Hash& CachedBlock::getBlockLongHash() const {
   if (!blockLongHash.is_initialized()) {
     if (block.majorVersion == BLOCK_MAJOR_VERSION_1) {
       const auto& rawHashingBlock = getBlockHashingBinaryArray();
       blockLongHash = Hash();
-      cn_slow_hash(cryptoContext, rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get(), 0x80000);
-    } else if (block.majorVersion == BLOCK_MAJOR_VERSION_2 || block.majorVersion == BLOCK_MAJOR_VERSION_3 || block.majorVersion == BLOCK_MAJOR_VERSION_4  ) {
+      cn_slow_hash_v0(rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get());
+    } else if ((block.majorVersion == BLOCK_MAJOR_VERSION_2) || (block.majorVersion == BLOCK_MAJOR_VERSION_3)) {
       const auto& rawHashingBlock = getParentBlockHashingBinaryArray(true);
       blockLongHash = Hash();
-      //printf("Crypto::Hash& CachedBlock::getBlockLongHash, cn_slow_hash\n");
-      
-      cn_slow_hash(cryptoContext, rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get(), 0x80000);
-    } 
-else if (block.majorVersion == BLOCK_MAJOR_VERSION_5) {
-    const auto& rawHashingBlock = getParentBlockHashingBinaryArray(true);
+      cn_slow_hash_v0(rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get());
+    } else if (block.majorVersion == BLOCK_MAJOR_VERSION_4) {
+      const auto& rawHashingBlock = getParentBlockHashingBinaryArray(true);
       blockLongHash = Hash();
-      //printf("Crypto::Hash& CachedBlock::getBlockLongHash, cn_slow_hash\n");
-      
-      cn_slow_hash(cryptoContext, rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get(), ITERS_V5);
-    }
-    
-    
-else {
+      cn_lite_slow_hash_v1(rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get());
+    } else if (block.majorVersion >= BLOCK_MAJOR_VERSION_5) {
+      const auto& rawHashingBlock = getParentBlockHashingBinaryArray(true);
+      blockLongHash = Hash();
+      cn_marcoin_lite_slow_hash_v2(rawHashingBlock.data(), rawHashingBlock.size(), blockLongHash.get());
+    } else {
       throw std::runtime_error("Unknown block major version.");
     }
   }

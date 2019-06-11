@@ -1,12 +1,8 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
@@ -39,7 +35,7 @@ namespace CryptoNote
   {
   public:
 
-    CryptoNoteProtocolHandler(const Currency& currency, System::Dispatcher& dispatcher, ICore& rcore, IP2pEndpoint* p_net_layout, Logging::ILogger& log);
+    CryptoNoteProtocolHandler(const Currency& currency, System::Dispatcher& dispatcher, ICore& rcore, IP2pEndpoint* p_net_layout, std::shared_ptr<Logging::ILogger> log);
 
     virtual bool addObserver(ICryptoNoteProtocolObserver* observer) override;
     virtual bool removeObserver(ICryptoNoteProtocolObserver* observer) override;
@@ -60,6 +56,7 @@ namespace CryptoNote
     int handleCommand(bool is_notify, int command, const BinaryArray& in_buff, BinaryArray& buff_out, CryptoNoteConnectionContext& context, bool& handled);
     virtual size_t getPeerCount() const override;
     virtual uint32_t getObservedHeight() const override;
+    virtual uint32_t getBlockchainHeight() const override;
     void requestMissingPoolTransactions(const CryptoNoteConnectionContext& context);
 
   private:
@@ -71,6 +68,8 @@ namespace CryptoNote
     int handle_request_chain(int command, NOTIFY_REQUEST_CHAIN::request& arg, CryptoNoteConnectionContext& context);
     int handle_response_chain_entry(int command, NOTIFY_RESPONSE_CHAIN_ENTRY::request& arg, CryptoNoteConnectionContext& context);
     int handleRequestTxPool(int command, NOTIFY_REQUEST_TX_POOL::request& arg, CryptoNoteConnectionContext& context);
+    int handle_notify_new_lite_block(int command, NOTIFY_NEW_LITE_BLOCK::request& arg, CryptoNoteConnectionContext& context);
+    int handle_notify_missing_txs(int command, NOTIFY_MISSING_TXS::request& arg, CryptoNoteConnectionContext& context);
 
     //----------------- i_cryptonote_protocol ----------------------------------
     virtual void relayBlock(NOTIFY_NEW_BLOCK::request& arg) override;
@@ -85,6 +84,9 @@ namespace CryptoNote
     int processObjects(CryptoNoteConnectionContext& context, std::vector<RawBlock>&& rawBlocks, const std::vector<CachedBlock>& cachedBlocks);
     Logging::LoggerRef logger;
 
+private:
+    int doPushLiteBlock(NOTIFY_NEW_LITE_BLOCK::request block, CryptoNoteConnectionContext& context, std::vector<BinaryArray> missingTxs);
+
   private:
 
     System::Dispatcher& m_dispatcher;
@@ -98,6 +100,9 @@ namespace CryptoNote
 
     mutable std::mutex m_observedHeightMutex;
     uint32_t m_observedHeight;
+    
+    mutable std::mutex m_blockchainHeightMutex;
+    uint32_t m_blockchainHeight;
 
     std::atomic<size_t> m_peersCount;
     Tools::ObserverManager<ICryptoNoteProtocolObserver> m_observerManager;

@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Base58.h"
 
@@ -25,11 +32,11 @@ namespace Tools
     namespace
     {
       const char alphabet[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-      const size_t alphabet_size = sizeof(alphabet) - 1;
-      const size_t encoded_block_sizes[] = {0, 2, 3, 5, 6, 7, 9, 10, 11};
-      const size_t full_block_size = sizeof(encoded_block_sizes) / sizeof(encoded_block_sizes[0]) - 1;
-      const size_t full_encoded_block_size = encoded_block_sizes[full_block_size];
-      const size_t addr_checksum_size = 4;
+      const uint64_t alphabet_size = sizeof(alphabet) - 1;
+      const uint64_t encoded_block_sizes[] = {0, 2, 3, 5, 6, 7, 9, 10, 11};
+      const uint64_t full_block_size = sizeof(encoded_block_sizes) / sizeof(encoded_block_sizes[0]) - 1;
+      const uint64_t full_encoded_block_size = encoded_block_sizes[full_block_size];
+      const uint64_t addr_checksum_size = 4;
 
       struct reverse_alphabet
       {
@@ -37,16 +44,16 @@ namespace Tools
         {
           m_data.resize(alphabet[alphabet_size - 1] - alphabet[0] + 1, -1);
 
-          for (size_t i = 0; i < alphabet_size; ++i)
+          for (uint64_t i = 0; i < alphabet_size; ++i)
           {
-            size_t idx = static_cast<size_t>(alphabet[i] - alphabet[0]);
+            uint64_t idx = static_cast<uint64_t>(alphabet[i] - alphabet[0]);
             m_data[idx] = static_cast<int8_t>(i);
           }
         }
 
         int operator()(char letter) const
         {
-          size_t idx = static_cast<size_t>(letter - alphabet[0]);
+          uint64_t idx = static_cast<uint64_t>(letter - alphabet[0]);
           return idx < m_data.size() ? m_data[idx] : -1;
         }
 
@@ -63,13 +70,13 @@ namespace Tools
         decoded_block_sizes()
         {
           m_data.resize(encoded_block_sizes[full_block_size] + 1, -1);
-          for (size_t i = 0; i <= full_block_size; ++i)
+          for (uint64_t i = 0; i <= full_block_size; ++i)
           {
             m_data[encoded_block_sizes[i]] = static_cast<int>(i);
           }
         }
 
-        int operator()(size_t encoded_block_size) const
+        int operator()(uint64_t encoded_block_size) const
         {
           assert(encoded_block_size <= full_encoded_block_size);
           return m_data[encoded_block_size];
@@ -83,28 +90,28 @@ namespace Tools
 
       decoded_block_sizes decoded_block_sizes::instance;
 
-      uint64_t uint_8be_to_64(const uint8_t* data, size_t size)
+      uint64_t uint_8be_to_64(const uint8_t* data, uint64_t size)
       {
         assert(1 <= size && size <= sizeof(uint64_t));
 
         uint64_t res = 0;
         switch (9 - size)
         {
-        case 1:            res |= *data++; // fallthrough
-        case 2: res <<= 8; res |= *data++; // fallthrough
-        case 3: res <<= 8; res |= *data++; // fallthrough
-        case 4: res <<= 8; res |= *data++; // fallthrough
-        case 5: res <<= 8; res |= *data++; // fallthrough
-        case 6: res <<= 8; res |= *data++; // fallthrough
-        case 7: res <<= 8; res |= *data++; // fallthrough
-        case 8: res <<= 8; res |= *data; break; // fallthrough
+        case 1:            res |= *data++; /* fallthrough */
+        case 2: res <<= 8; res |= *data++; /* fallthrough */
+        case 3: res <<= 8; res |= *data++; /* fallthrough */
+        case 4: res <<= 8; res |= *data++; /* fallthrough */
+        case 5: res <<= 8; res |= *data++; /* fallthrough */
+        case 6: res <<= 8; res |= *data++; /* fallthrough */
+        case 7: res <<= 8; res |= *data++; /* fallthrough */
+        case 8: res <<= 8; res |= *data; break;
         default: assert(false);
         }
 
         return res;
       }
 
-      void uint_64_to_8be(uint64_t num, size_t size, uint8_t* data)
+      void uint_64_to_8be(uint64_t num, uint64_t size, uint8_t* data)
       {
         assert(1 <= size && size <= sizeof(uint64_t));
 
@@ -112,7 +119,7 @@ namespace Tools
         memcpy(data, reinterpret_cast<uint8_t*>(&num_be) + sizeof(uint64_t) - size, size);
       }
 
-      void encode_block(const char* block, size_t size, char* res)
+      void encode_block(const char* block, uint64_t size, char* res)
       {
         assert(1 <= size && size <= full_block_size);
 
@@ -127,7 +134,7 @@ namespace Tools
         }
       }
 
-      bool decode_block(const char* block, size_t size, char* res)
+      bool decode_block(const char* block, uint64_t size, char* res)
       {
         assert(1 <= size && size <= full_encoded_block_size);
 
@@ -137,7 +144,7 @@ namespace Tools
 
         uint64_t res_num = 0;
         uint64_t order = 1;
-        for (size_t i = size - 1; i < size; --i)
+        for (uint64_t i = size - 1; i < size; --i)
         {
           int digit = reverse_alphabet::instance(block[i]);
           if (digit < 0)
@@ -152,7 +159,7 @@ namespace Tools
           order *= alphabet_size; // Never overflows, 58^10 < 2^64
         }
 
-        if (static_cast<size_t>(res_size) < full_block_size && (UINT64_C(1) << (8 * res_size)) <= res_num)
+        if (static_cast<uint64_t>(res_size) < full_block_size && (UINT64_C(1) << (8 * res_size)) <= res_num)
           return false; // Overflow
 
         uint_64_to_8be(res_num, res_size, reinterpret_cast<uint8_t*>(res));
@@ -166,12 +173,12 @@ namespace Tools
       if (data.empty())
         return std::string();
 
-      size_t full_block_count = data.size() / full_block_size;
-      size_t last_block_size = data.size() % full_block_size;
-      size_t res_size = full_block_count * full_encoded_block_size + encoded_block_sizes[last_block_size];
+      uint64_t full_block_count = data.size() / full_block_size;
+      uint64_t last_block_size = data.size() % full_block_size;
+      uint64_t res_size = full_block_count * full_encoded_block_size + encoded_block_sizes[last_block_size];
 
       std::string res(res_size, alphabet[0]);
-      for (size_t i = 0; i < full_block_count; ++i)
+      for (uint64_t i = 0; i < full_block_count; ++i)
       {
         encode_block(data.data() + i * full_block_size, full_block_size, &res[i * full_encoded_block_size]);
       }
@@ -192,15 +199,15 @@ namespace Tools
         return true;
       }
 
-      size_t full_block_count = enc.size() / full_encoded_block_size;
-      size_t last_block_size = enc.size() % full_encoded_block_size;
+      uint64_t full_block_count = enc.size() / full_encoded_block_size;
+      uint64_t last_block_size = enc.size() % full_encoded_block_size;
       int last_block_decoded_size = decoded_block_sizes::instance(last_block_size);
       if (last_block_decoded_size < 0)
         return false; // Invalid enc length
-      size_t data_size = full_block_count * full_block_size + last_block_decoded_size;
+      uint64_t data_size = full_block_count * full_block_size + last_block_decoded_size;
 
       data.resize(data_size, 0);
-      for (size_t i = 0; i < full_block_count; ++i)
+      for (uint64_t i = 0; i < full_block_count; ++i)
       {
         if (!decode_block(enc.data() + i * full_encoded_block_size, full_encoded_block_size, &data[i * full_block_size]))
           return false;

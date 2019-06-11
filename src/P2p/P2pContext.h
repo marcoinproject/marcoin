@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -19,7 +26,7 @@
 #include <System/TcpConnection.h>
 #include <System/Timer.h>
 
-#include "CryptoNoteConfig.h"
+#include <config/CryptoNoteConfig.h>
 #include "LevinProtocol.h"
 #include "P2pInterfaces.h"
 #include "P2pProtocolDefinitions.h"
@@ -50,12 +57,12 @@ public:
     bool isIncoming, const NetworkAddress& remoteAddress, std::chrono::nanoseconds timedSyncInterval, const CORE_SYNC_DATA& timedSyncData);
   ~P2pContext();
 
-  PeerIdType getPeerId() const;
+  uint64_t getPeerId() const;
   uint16_t getPeerPort() const;
   const NetworkAddress& getRemoteAddress() const;
   bool isIncoming() const;
 
-  void setPeerInfo(uint8_t protocolVersion, PeerIdType id, uint16_t port);
+  void setPeerInfo(uint8_t protocolVersion, uint64_t id, uint16_t port);
   bool readCommand(LevinProtocol::Command& cmd);
   void writeMessage(const Message& msg);
  
@@ -67,7 +74,7 @@ private:
   uint8_t version = 0;
   const bool incoming;
   const NetworkAddress remoteAddress;
-  PeerIdType peerId = 0;
+  uint64_t peerId = 0;
   uint16_t peerPort = 0;
 
   System::Dispatcher& dispatcher;

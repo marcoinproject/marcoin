@@ -1,17 +1,25 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CryptoNoteBasicImpl.h"
 #include "CryptoNoteFormatUtils.h"
-#include "CryptoNoteTools.h"
-#include "CryptoNoteSerialization.h"
+#include "Common/CryptoNoteTools.h"
+
+#include "Serialization/CryptoNoteSerialization.h"
 
 #include "Common/Base58.h"
 #include "crypto/hash.h"
@@ -53,45 +61,6 @@ namespace CryptoNote {
 
     return penalizedAmountLo;
   }
-  //-----------------------------------------------------------------------
-  std::string getAccountAddressAsStr(uint64_t prefix, const AccountPublicAddress& adr) {
-    BinaryArray ba;
-    bool r = toBinaryArray(adr, ba);
-    assert(r);
-    return Tools::Base58::encode_addr(prefix, Common::asString(ba));
-  }
-  //-----------------------------------------------------------------------
-  bool is_coinbase(const Transaction& tx) {
-    if(tx.inputs.size() != 1) {
-      return false;
-    }
-
-    if(tx.inputs[0].type() != typeid(BaseInput)) {
-      return false;
-    }
-
-    return true;
-  }
-  //-----------------------------------------------------------------------
-  bool parseAccountAddressString(uint64_t& prefix, AccountPublicAddress& adr, const std::string& str) {
-    std::string data;
-
-    return
-      Tools::Base58::decode_addr(str, prefix, data) &&
-      fromBinaryArray(adr, asBinaryArray(data)) &&
-      // ::serialization::parse_binary(data, adr) &&
-      check_key(adr.spendPublicKey) &&
-      check_key(adr.viewPublicKey);
-  }
-  ////-----------------------------------------------------------------------
-  //bool operator ==(const CryptoNote::Transaction& a, const CryptoNote::Transaction& b) {
-  //  return getObjectHash(a) == getObjectHash(b);
-  //}
-  ////-----------------------------------------------------------------------
-  //bool operator ==(const CryptoNote::BlockTemplate& a, const CryptoNote::BlockTemplate& b) {
-
-  //  return CryptoNote::get_block_hash(a) == CryptoNote::get_block_hash(b);
-  //}
 }
 
 //--------------------------------------------------------------------------------

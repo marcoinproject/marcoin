@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "StringTools.h"
 #include <fstream>
@@ -37,7 +44,7 @@ const uint8_t characterValues[256] = {
 
 }
 
-std::string asString(const void* data, size_t size) {
+std::string asString(const void* data, uint64_t size) {
   return std::string(static_cast<const char*>(data), size);
 }
 
@@ -68,7 +75,7 @@ bool fromHex(char character, uint8_t& value) {
   return true;
 }
 
-size_t fromHex(const std::string& text, void* data, size_t bufferSize) {
+uint64_t fromHex(const std::string& text, void* data, uint64_t bufferSize) {
   if ((text.size() & 1) != 0) {
     throw std::runtime_error("fromHex: invalid string size");
   }
@@ -77,14 +84,14 @@ size_t fromHex(const std::string& text, void* data, size_t bufferSize) {
     throw std::runtime_error("fromHex: invalid buffer size");
   }
 
-  for (size_t i = 0; i < text.size() >> 1; ++i) {
+  for (uint64_t i = 0; i < text.size() >> 1; ++i) {
     static_cast<uint8_t*>(data)[i] = fromHex(text[i << 1]) << 4 | fromHex(text[(i << 1) + 1]);
   }
 
   return text.size() >> 1;
 }
 
-bool fromHex(const std::string& text, void* data, size_t bufferSize, size_t& size) {
+bool fromHex(const std::string& text, void* data, uint64_t bufferSize, uint64_t& size) {
   if ((text.size() & 1) != 0) {
     return false;
   }
@@ -93,7 +100,7 @@ bool fromHex(const std::string& text, void* data, size_t bufferSize, size_t& siz
     return false;
   }
 
-  for (size_t i = 0; i < text.size() >> 1; ++i) {
+  for (uint64_t i = 0; i < text.size() >> 1; ++i) {
     uint8_t value1;
     if (!fromHex(text[i << 1], value1)) {
       return false;
@@ -117,7 +124,7 @@ std::vector<uint8_t> fromHex(const std::string& text) {
   }
 
   std::vector<uint8_t> data(text.size() >> 1);
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (uint64_t i = 0; i < data.size(); ++i) {
     data[i] = fromHex(text[i << 1]) << 4 | fromHex(text[(i << 1) + 1]);
   }
 
@@ -129,7 +136,7 @@ bool fromHex(const std::string& text, std::vector<uint8_t>& data) {
     return false;
   }
 
-  for (size_t i = 0; i < text.size() >> 1; ++i) {
+  for (uint64_t i = 0; i < text.size() >> 1; ++i) {
     uint8_t value1;
     if (!fromHex(text[i << 1], value1)) {
       return false;
@@ -146,9 +153,9 @@ bool fromHex(const std::string& text, std::vector<uint8_t>& data) {
   return true;
 }
 
-std::string toHex(const void* data, size_t size) {
+std::string toHex(const void* data, uint64_t size) {
   std::string text;
-  for (size_t i = 0; i < size; ++i) {
+  for (uint64_t i = 0; i < size; ++i) {
     text += "0123456789abcdef"[static_cast<const uint8_t*>(data)[i] >> 4];
     text += "0123456789abcdef"[static_cast<const uint8_t*>(data)[i] & 15];
   }
@@ -156,8 +163,8 @@ std::string toHex(const void* data, size_t size) {
   return text;
 }
 
-void toHex(const void* data, size_t size, std::string& text) {
-  for (size_t i = 0; i < size; ++i) {
+void toHex(const void* data, uint64_t size, std::string& text) {
+  for (uint64_t i = 0; i < size; ++i) {
     text += "0123456789abcdef"[static_cast<const uint8_t*>(data)[i] >> 4];
     text += "0123456789abcdef"[static_cast<const uint8_t*>(data)[i] & 15];
   }
@@ -165,7 +172,7 @@ void toHex(const void* data, size_t size, std::string& text) {
 
 std::string toHex(const std::vector<uint8_t>& data) {
   std::string text;
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (uint64_t i = 0; i < data.size(); ++i) {
     text += "0123456789abcdef"[data[i] >> 4];
     text += "0123456789abcdef"[data[i] & 15];
   }
@@ -174,14 +181,14 @@ std::string toHex(const std::vector<uint8_t>& data) {
 }
 
 void toHex(const std::vector<uint8_t>& data, std::string& text) {
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (uint64_t i = 0; i < data.size(); ++i) {
     text += "0123456789abcdef"[data[i] >> 4];
     text += "0123456789abcdef"[data[i] & 15];
   }
 }
 
 std::string extract(std::string& text, char delimiter) {
-  size_t delimiterPosition = text.find(delimiter);
+  uint64_t delimiterPosition = text.find(delimiter);
   std::string subText;
   if (delimiterPosition != std::string::npos) {
     subText = text.substr(0, delimiterPosition);
@@ -193,8 +200,8 @@ std::string extract(std::string& text, char delimiter) {
   return subText;
 }
 
-std::string extract(const std::string& text, char delimiter, size_t& offset) {
-  size_t delimiterPosition = text.find(delimiter, offset);
+std::string extract(const std::string& text, char delimiter, uint64_t& offset) {
+  uint64_t delimiterPosition = text.find(delimiter, offset);
   if (delimiterPosition != std::string::npos) {
     offset = delimiterPosition + 1;
     return text.substr(offset, delimiterPosition);
@@ -203,95 +210,6 @@ std::string extract(const std::string& text, char delimiter, size_t& offset) {
     return text.substr(offset);
   }
 }
-
-namespace {
-
-static const std::string base64chars =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  "abcdefghijklmnopqrstuvwxyz"
-  "0123456789+/";
-
-bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
-
-}
-
-std::string base64Decode(std::string const& encoded_string) {
-  size_t in_len = encoded_string.size();
-  size_t i = 0;
-  size_t j = 0;
-  size_t in_ = 0;
-  unsigned char char_array_4[4], char_array_3[3];
-  std::string ret;
-
-  while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
-    char_array_4[i++] = encoded_string[in_]; in_++;
-    if (i == 4) {
-      for (i = 0; i <4; i++)
-        char_array_4[i] = (unsigned char)base64chars.find(char_array_4[i]);
-
-      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-      for (i = 0; (i < 3); i++)
-        ret += char_array_3[i];
-      i = 0;
-    }
-  }
-
-  if (i) {
-    for (j = i; j <4; j++)
-      char_array_4[j] = 0;
-
-    for (j = 0; j <4; j++)
-      char_array_4[j] = (unsigned char)base64chars.find(char_array_4[j]);
-
-    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
-  }
-
-  return ret;
-}
-
-
-bool loadFileToString(const std::string& filepath, std::string& buf) {
-  try {
-    std::ifstream fstream;
-    fstream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fstream.open(filepath, std::ios_base::binary | std::ios_base::in | std::ios::ate);
-
-    size_t fileSize = static_cast<size_t>(fstream.tellg());
-    buf.resize(fileSize);
-
-    if (fileSize > 0)  {
-      fstream.seekg(0, std::ios::beg);
-      fstream.read(&buf[0], buf.size());
-    }
-  } catch (const std::exception&) {
-    return false;
-  }
-
-  return true;
-}
-
-bool saveStringToFile(const std::string& filepath, const std::string& buf) {
-  try {
-    std::ofstream fstream;
-    fstream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fstream.open(filepath, std::ios_base::binary | std::ios_base::out | std::ios_base::trunc);
-    fstream << buf;
-  } catch (const std::exception&)  {
-    return false;
-  }
-
-  return true;
-}
-
 
 std::string ipAddressToString(uint32_t ip) {
   uint8_t bytes[4];

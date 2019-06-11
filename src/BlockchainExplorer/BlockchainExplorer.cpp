@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BlockchainExplorer.h"
 
@@ -20,7 +27,7 @@
 #include "Common/StdInputStream.h"
 #include "CryptoNoteCore/CryptoNoteFormatUtils.h"
 #include "CryptoNoteCore/CryptoNoteBasicImpl.h"
-#include "CryptoNoteConfig.h"
+#include <config/CryptoNoteConfig.h>
 
 #include "ITransaction.h"
 
@@ -69,7 +76,7 @@ private:
       callback(ec);
     } catch (...) {
       return;
-    }
+    } 
   }
 
   const std::function<void(const INode::Callback&)> requestFunc;
@@ -139,17 +146,16 @@ private:
   bool m_cancelled;
 };
 
-BlockchainExplorer::BlockchainExplorer(INode& node, Logging::ILogger& logger) :
-  node(node),
+BlockchainExplorer::BlockchainExplorer(INode& node, std::shared_ptr<Logging::ILogger> logger) :
+  node(node), 
   logger(logger, "BlockchainExplorer"),
-  database(database),
-  state(NOT_INITIALIZED),
-  synchronized(false),
+  state(NOT_INITIALIZED), 
+  synchronized(false), 
   observersCounter(0) {
 }
 
 BlockchainExplorer::~BlockchainExplorer() {}
-
+    
 bool BlockchainExplorer::addObserver(IBlockchainObserver* observer) {
   if (state.load() != INITIALIZED) {
     throw std::system_error(make_error_code(CryptoNote::error::BlockchainExplorerErrorCodes::NOT_INITIALIZED));
@@ -422,27 +428,6 @@ bool BlockchainExplorer::getPoolState(const std::vector<Hash>& knownPoolTransact
   return getTransactions(newTransactionsHashes, newTransactions);
 }
 
-uint64_t BlockchainExplorer::getRewardBlocksWindow() {
-  if (state.load() != INITIALIZED) {
-    throw std::system_error(make_error_code(CryptoNote::error::BlockchainExplorerErrorCodes::NOT_INITIALIZED));
-  }
-  return CRYPTONOTE_REWARD_BLOCKS_WINDOW;
-}
-
-uint64_t BlockchainExplorer::getFullRewardMaxBlockSize(uint8_t majorVersion) {
-  if (state.load() != INITIALIZED) {
-    throw std::system_error(make_error_code(CryptoNote::error::BlockchainExplorerErrorCodes::NOT_INITIALIZED));
-  }
-
-  if (majorVersion >= BLOCK_MAJOR_VERSION_3) {
-    return CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
-  } else if (majorVersion == BLOCK_MAJOR_VERSION_2) {
-    return CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;
-  } else {
-    return CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1;
-  }
-}
-
 bool BlockchainExplorer::isSynchronized() {
   if (state.load() != INITIALIZED) {
     throw std::system_error(make_error_code(CryptoNote::error::BlockchainExplorerErrorCodes::NOT_INITIALIZED));
@@ -518,7 +503,7 @@ void BlockchainExplorer::poolChanged() {
           newTransactionsHashesPtr->push_back(hash);
         }
       }
-
+      
       auto removedTransactionsHashesPtr = std::make_shared<std::vector<std::pair<Hash, TransactionRemoveReason>>>();
       removedTransactionsHashesPtr->reserve(removedTransactionsPtr->size());
       for (const Hash& hash : *removedTransactionsPtr) {
@@ -534,7 +519,7 @@ void BlockchainExplorer::poolChanged() {
 
       std::shared_ptr<std::vector<TransactionDetails>> newTransactionsPtr = std::make_shared<std::vector<TransactionDetails>>();
       newTransactionsPtr->reserve(newTransactionsHashesPtr->size());
-      NodeRequest request([&](const INode::Callback& cb) {
+      NodeRequest request([&](const INode::Callback& cb) { 
         node.getTransactions(*newTransactionsHashesPtr, *newTransactionsPtr, cb);
       });
 
@@ -613,11 +598,11 @@ void BlockchainExplorer::blockchainSynchronized(uint32_t topIndex) {
       static_cast<
         void(INode::*)(
         const std::vector<uint32_t>&,
-          std::vector<std::vector<BlockDetails>>&,
+          std::vector<std::vector<BlockDetails>>&, 
           const INode::Callback&
         )
-      >(&INode::getBlocks),
-      std::ref(node),
+      >(&INode::getBlocks), 
+      std::ref(node), 
       std::cref(*blockIndexesPtr),
       std::ref(*blocksPtr),
       std::placeholders::_1
@@ -625,7 +610,7 @@ void BlockchainExplorer::blockchainSynchronized(uint32_t topIndex) {
   );
 
   request.performAsync(asyncContextCounter,
-    [this, blockIndexesPtr, blocksPtr, topIndex](std::error_code ec) {
+    [this, blockIndexesPtr, blocksPtr](std::error_code ec) {
       if (ec) {
         logger(ERROR) << "Can't send blockchainSynchronized notification because can't get blocks by height: " << ec.message();
         return;
@@ -643,7 +628,7 @@ void BlockchainExplorer::blockchainSynchronized(uint32_t topIndex) {
 
 void BlockchainExplorer::localBlockchainUpdated(uint32_t index) {
   logger(DEBUGGING) << "Got localBlockchainUpdated notification.";
-
+  
   std::unique_lock<std::mutex> lock(mutex);
   assert(index >= knownBlockchainTop.index);
   if (index == knownBlockchainTop.index) {
@@ -658,45 +643,6 @@ void BlockchainExplorer::localBlockchainUpdated(uint32_t index) {
   }
 
   NodeRequest request([=](const INode::Callback& cb) { node.getBlocks(*blockIndexesPtr, *blocksPtr, cb); });
-
-  request.performAsync(asyncContextCounter,
-    [this, blockIndexesPtr, blocksPtr](std::error_code ec) {
-      if (ec) {
-        logger(ERROR) << "Can't send blockchainUpdated notification because can't get blocks by height: " << ec.message();
-        return;
-      }
-      assert(blocksPtr->size() == blockIndexesPtr->size());
-      handleBlockchainUpdatedNotification(*blocksPtr);
-    }
-  );
-}
-
-void BlockchainExplorer::chainSwitched(uint32_t newTopIndex, uint32_t commonRoot, const std::vector<Crypto::Hash>& hashes) {
-  assert(newTopIndex > commonRoot);
-  std::shared_ptr<std::vector<uint32_t>> blockIndexesPtr = std::make_shared<std::vector<uint32_t>>();
-  std::shared_ptr<std::vector<std::vector<BlockDetails>>> blocksPtr = std::make_shared<std::vector<std::vector<BlockDetails>>>();
-  blockIndexesPtr->reserve(newTopIndex - commonRoot);
-  blocksPtr->reserve(newTopIndex - commonRoot);
-
-  for (uint32_t i = commonRoot + 1; i <= newTopIndex; ++i) {
-    blockIndexesPtr->push_back(i);
-  }
-
-  NodeRequest request(
-    std::bind(
-      static_cast<
-        void(INode::*)(
-          const std::vector<uint32_t>&,
-          std::vector<std::vector<BlockDetails>>&,
-          const INode::Callback&
-        )
-      >(&INode::getBlocks),
-      std::ref(node),
-      std::cref(*blockIndexesPtr),
-      std::ref(*blocksPtr),
-      std::placeholders::_1
-    )
-  );
 
   request.performAsync(asyncContextCounter,
     [this, blockIndexesPtr, blocksPtr](std::error_code ec) {

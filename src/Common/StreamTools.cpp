@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "StreamTools.h"
 #include <stdexcept>
@@ -15,9 +22,9 @@
 
 namespace Common {
 
-void read(IInputStream& in, void* data, size_t size) {
+void read(IInputStream& in, void* data, uint64_t size) {
   while (size > 0) {
-    size_t readSize = in.readSome(data, size);
+    uint64_t readSize = in.readSome(data, size);
     if (readSize == 0) {
       throw std::runtime_error("Failed to read from IInputStream");
     }
@@ -65,12 +72,12 @@ void read(IInputStream& in, uint64_t& value) {
   read(in, &value, sizeof(value));
 }
 
-void read(IInputStream& in, std::vector<uint8_t>& data, size_t size) {
+void read(IInputStream& in, std::vector<uint8_t>& data, uint64_t size) {
   data.resize(size);
   read(in, data.data(), size);
 }
 
-void read(IInputStream& in, std::string& data, size_t size) {
+void read(IInputStream& in, std::string& data, uint64_t size) {
   std::vector<char> temp(size);
   read(in, temp.data(), size);
   data.assign(temp.data(), size);
@@ -85,7 +92,7 @@ void readVarint(IInputStream& in, uint8_t& value) {
       throw std::runtime_error("readVarint, value overflow");
     }
 
-    temp |= static_cast<size_t>(piece & 0x7f) << shift;
+    temp |= static_cast<uint64_t>(piece & 0x7f) << shift;
     if ((piece & 0x80) == 0) {
       if (piece == 0 && shift != 0) {
         throw std::runtime_error("readVarint, invalid value representation");
@@ -107,7 +114,7 @@ void readVarint(IInputStream& in, uint16_t& value) {
       throw std::runtime_error("readVarint, value overflow");
     }
 
-    temp |= static_cast<size_t>(piece & 0x7f) << shift;
+    temp |= static_cast<uint64_t>(piece & 0x7f) << shift;
     if ((piece & 0x80) == 0) {
       if (piece == 0 && shift != 0) {
         throw std::runtime_error("readVarint, invalid value representation");
@@ -129,7 +136,7 @@ void readVarint(IInputStream& in, uint32_t& value) {
       throw std::runtime_error("readVarint, value overflow");
     }
 
-    temp |= static_cast<size_t>(piece & 0x7f) << shift;
+    temp |= static_cast<uint64_t>(piece & 0x7f) << shift;
     if ((piece & 0x80) == 0) {
       if (piece == 0 && shift != 0) {
         throw std::runtime_error("readVarint, invalid value representation");
@@ -164,9 +171,9 @@ void readVarint(IInputStream& in, uint64_t& value) {
   value = temp;
 }
 
-void write(IOutputStream& out, const void* data, size_t size) {
+void write(IOutputStream& out, const void* data, uint64_t size) {
   while (size > 0) {
-    size_t writtenSize = out.writeSome(data, size);
+    uint64_t writtenSize = out.writeSome(data, size);
     if (writtenSize == 0) {
       throw std::runtime_error("Failed to write to IOutputStream");
     }

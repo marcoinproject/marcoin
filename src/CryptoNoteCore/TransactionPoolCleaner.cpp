@@ -1,16 +1,11 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #include "TransactionPoolCleaner.h"
-#include "CryptoNoteConfig.h"
-
+#include "Core.h"
+#include "Mixins.h"
 
 #include "Common/StringTools.h"
 
@@ -22,7 +17,7 @@ namespace CryptoNote {
 TransactionPoolCleanWrapper::TransactionPoolCleanWrapper(
   std::unique_ptr<ITransactionPool>&& transactionPool,
   std::unique_ptr<ITimeProvider>&& timeProvider,
-  Logging::ILogger& logger,
+  std::shared_ptr<Logging::ILogger> logger,
   uint64_t timeout)
   :
   transactionPool(std::move(transactionPool)),
@@ -68,6 +63,11 @@ std::vector<CachedTransaction> TransactionPoolCleanWrapper::getPoolTransactions(
   return transactionPool->getPoolTransactions();
 }
 
+std::tuple<std::vector<CachedTransaction>, std::vector<CachedTransaction>> TransactionPoolCleanWrapper::getPoolTransactionsForBlockTemplate() const
+{
+  return transactionPool->getPoolTransactionsForBlockTemplate();
+}
+
 uint64_t TransactionPoolCleanWrapper::getTransactionReceiveTime(const Crypto::Hash& hash) const {
   return transactionPool->getTransactionReceiveTime(hash);
 }
@@ -76,43 +76,36 @@ std::vector<Crypto::Hash> TransactionPoolCleanWrapper::getTransactionHashesByPay
   return transactionPool->getTransactionHashesByPaymentId(paymentId);
 }
 
-std::vector<Crypto::Hash> TransactionPoolCleanWrapper::clean() {
+std::vector<Crypto::Hash> TransactionPoolCleanWrapper::clean(const uint32_t height) {
   try {
+    uint64_t currentTime = timeProvider->now();
+    auto transactionHashes = transactionPool->getTransactionHashes();
 
-  uint64_t currentTime = timeProvider->now();
-  std::vector<Crypto::Hash> deletedTransactions;
-  auto transactionHashes = transactionPool->getTransactionHashes();  
+    std::vector<Crypto::Hash> deletedTransactions;
+    for (const auto& hash: transactionHashes) {
+      uint64_t transactionAge = currentTime - transactionPool->getTransactionReceiveTime(hash);
+      if (transactionAge >= timeout) {
+        logger(Logging::DEBUGGING) << "Deleting transaction " << Common::podToHex(hash) << " from pool";
+        recentlyDeletedTransactions.emplace(hash, currentTime);
+        transactionPool->removeTransaction(hash);
+        deletedTransactions.emplace_back(std::move(hash));
+      }
 
+      CachedTransaction transaction = transactionPool->getTransaction(hash);
+      std::vector<CachedTransaction> transactions;
+      transactions.emplace_back(transaction);
 
- //this will clean out mempool TX's based on size
-/*  
-std::vector<CachedTransaction> poolTransactions = transactionPool->getPoolTransactions();
-    for (auto it = poolTransactions.rbegin(); it != poolTransactions.rend(); ++it) {
-    const CachedTransaction& transaction = *it;
-    auto transactionBlobSize = transaction.getTransactionBinaryArray().size();
-    auto hash=transaction.getTransactionHash();
+      auto [success, error] = Mixins::validate(transactions, height);
 
-    if (transactionBlobSize > MARCOIN_TRANSACTION_SIZE_LIMIT) {
-      logger(Logging::INFO) << "Cleaner Deleting transaction size: "  << transactionBlobSize
-      << ", hash: " << Common::podToHex(hash) << "  from pool";
-
-      recentlyDeletedTransactions.emplace(hash, currentTime);
-      transactionPool->removeTransaction(hash);
-      deletedTransactions.emplace_back(std::move(hash));
-     }
-   }
-*/
-  
-
-  for (const auto& hash: transactionHashes) {
-    uint64_t transactionAge = currentTime - transactionPool->getTransactionReceiveTime(hash);
-    if (transactionAge >= timeout) {
-      logger(Logging::INFO) << "Deleting transaction " << Common::podToHex(hash) << " from pool after timeout:"<<timeout;
-      recentlyDeletedTransactions.emplace(hash, currentTime);
-      transactionPool->removeTransaction(hash);
-      deletedTransactions.emplace_back(std::move(hash));
+      if (!success)
+      {
+        logger(Logging::DEBUGGING) << "Deleting invalid transaction " << Common::podToHex(hash) << " from pool." <<
+          error;
+        recentlyDeletedTransactions.emplace(hash, currentTime);
+        transactionPool->removeTransaction(hash);
+        deletedTransactions.emplace_back(std::move(hash));
+      }
     }
-  }
 
     cleanRecentlyDeletedTransactions(currentTime);
     return deletedTransactions;

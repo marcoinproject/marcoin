@@ -1,12 +1,6 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018-2019 Galaxia Project Developers
+// Copyright (c) 2018, The Marcoin Developers
 
 #pragma once
 
@@ -28,8 +22,9 @@ enum class BlockValidationError {
   BLOCK_REWARD_MISMATCH,
   CHECKPOINT_BLOCK_HASH_MISMATCH,
   PROOF_OF_WORK_TOO_WEAK,
-NO_MORE_BLOCK,
-  TRANSACTION_ABSENT_IN_POOL
+  TRANSACTION_ABSENT_IN_POOL,
+  TRANSACTION_DUPLICATES,
+  TRANSACTION_INCONSISTENCY
 };
 
 // custom category:
@@ -60,8 +55,9 @@ public:
       case BlockValidationError::BLOCK_REWARD_MISMATCH: return "Block reward doesn't match expected reward";
       case BlockValidationError::CHECKPOINT_BLOCK_HASH_MISMATCH: return "Checkpoint block hash mismatch";
       case BlockValidationError::PROOF_OF_WORK_TOO_WEAK: return "Proof of work is too weak";
-case BlockValidationError::NO_MORE_BLOCK: return "Kill block reached";
       case BlockValidationError::TRANSACTION_ABSENT_IN_POOL: return "Block's transaction is absent in transaction pool";
+      case BlockValidationError::TRANSACTION_DUPLICATES: return "Block contains duplicate transaction hashes";
+      case BlockValidationError::TRANSACTION_INCONSISTENCY: return "Block contains inconsisten transaction hashes";
       default: return "Unknown error";
     }
   }

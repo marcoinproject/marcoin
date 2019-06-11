@@ -1,12 +1,8 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+// Copyright (c) 2019, The CyprusCoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
@@ -14,7 +10,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include "P2pProtocolTypes.h"
 
 namespace CryptoNote {
@@ -22,11 +17,14 @@ namespace CryptoNote {
 class NetNodeConfig {
 public:
   NetNodeConfig();
-  static void initOptions(boost::program_options::options_description& desc);
-  bool init(const boost::program_options::variables_map& vm);
+  bool init(const std::string interface, const int port, const int external, const bool localIp,
+              const bool hidePort, const std::string dataDir, const std::vector<std::string> addPeers,
+              const std::vector<std::string> addExclusiveNodes, const std::vector<std::string> addPriorityNodes,
+              const std::vector<std::string> addSeedNodes, const bool p2pResetPeerState);
 
   std::string getP2pStateFilename() const;
   bool getTestnet() const;
+  bool getP2pStateReset() const;
   std::string getBindIp() const;
   uint16_t getBindPort() const;
   uint16_t getExternalPort() const;
@@ -37,19 +35,6 @@ public:
   std::vector<NetworkAddress> getSeedNodes() const;
   bool getHideMyPort() const;
   std::string getConfigFolder() const;
-
-  void setP2pStateFilename(const std::string& filename);
-  void setTestnet(bool isTestnet);
-  void setBindIp(const std::string& ip);
-  void setBindPort(uint16_t port);
-  void setExternalPort(uint16_t port);
-  void setAllowLocalIp(bool allow);
-  void setPeers(const std::vector<PeerlistEntry>& peerList);
-  void setPriorityNodes(const std::vector<NetworkAddress>& addresses);
-  void setExclusiveNodes(const std::vector<NetworkAddress>& addresses);
-  void setSeedNodes(const std::vector<NetworkAddress>& addresses);
-  void setHideMyPort(bool hide);
-  void setConfigFolder(const std::string& folder);
 
 private:
   std::string bindIp;
@@ -64,6 +49,7 @@ private:
   std::string configFolder;
   std::string p2pStateFilename;
   bool testnet;
+  bool p2pStateReset;
 };
 
 } //namespace nodetool

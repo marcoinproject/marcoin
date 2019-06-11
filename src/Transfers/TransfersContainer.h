@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -22,7 +29,7 @@
 
 #include "crypto/crypto.h"
 #include "CryptoNoteCore/CryptoNoteBasic.h"
-#include "CryptoNoteCore/CryptoNoteSerialization.h"
+#include "Serialization/CryptoNoteSerialization.h"
 #include "CryptoNoteCore/Currency.h"
 #include "Logging/LoggerRef.h"
 #include "Serialization/ISerializer.h"
@@ -42,8 +49,6 @@ public:
   SpentOutputDescriptor(const Crypto::KeyImage* keyImage);
 
   void assign(const Crypto::KeyImage* keyImage);
-
-  bool isValid() const;
 
   bool operator==(const SpentOutputDescriptor& other) const;
   size_t hash() const;
@@ -140,7 +145,7 @@ struct KeyOutputInfo {
 
 class TransfersContainer : public ITransfersContainer {
 public:
-  TransfersContainer(const CryptoNote::Currency& currency, Logging::ILogger& logger, size_t transactionSpendableAge);
+  TransfersContainer(const CryptoNote::Currency& currency, std::shared_ptr<Logging::ILogger> logger, size_t transactionSpendableAge);
 
   bool addTransaction(const TransactionBlockInfo& block, const ITransactionReader& tx, const std::vector<TransactionOutputInformationIn>& transfers);
   bool deleteUnconfirmedTransaction(const Crypto::Hash& transactionHash);
@@ -150,7 +155,6 @@ public:
   bool advanceHeight(uint32_t height);
 
   // ITransfersContainer
-  virtual size_t transfersCount() const override;
   virtual size_t transactionsCount() const override;
   virtual uint64_t balance(uint32_t flags) const override;
   virtual void getOutputs(std::vector<TransactionOutputInformation>& transfers, uint32_t flags) const override;
@@ -160,7 +164,6 @@ public:
   //only type flags are feasible for this function
   virtual std::vector<TransactionOutputInformation> getTransactionInputs(const Crypto::Hash& transactionHash, uint32_t flags) const override;
   virtual void getUnconfirmedTransactions(std::vector<Crypto::Hash>& transactions) const override;
-  virtual std::vector<TransactionSpentOutputInformation> getSpentOutputs() const override;
 
   // IStreamSerializable
   virtual void save(std::ostream& os) override;
@@ -261,7 +264,6 @@ private:
   void updateTransfersVisibility(const Crypto::KeyImage& keyImage);
 
   void copyToSpent(const TransactionBlockInfo& block, const ITransactionReader& tx, size_t inputIndex, const TransactionOutputInformationEx& output);
-  void repair();
 
 private:
   TransactionMultiIndex m_transactions;

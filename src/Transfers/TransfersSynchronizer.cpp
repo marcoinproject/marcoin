@@ -1,12 +1,9 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The BBSCoin Developers
+// Copyright (c) 2018, The Karbo Developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #include "TransfersSynchronizer.h"
 #include "TransfersConsumer.h"
@@ -24,7 +21,7 @@ namespace CryptoNote {
 
 const uint32_t TRANSFERS_STORAGE_ARCHIVE_VERSION = 0;
 
-TransfersSyncronizer::TransfersSyncronizer(const CryptoNote::Currency& currency, Logging::ILogger& logger, IBlockchainSynchronizer& sync, INode& node) :
+TransfersSyncronizer::TransfersSyncronizer(const CryptoNote::Currency& currency, std::shared_ptr<Logging::ILogger> logger, IBlockchainSynchronizer& sync, INode& node) :
   m_currency(currency), m_logger(logger, "TransfersSyncronizer"), m_sync(sync), m_node(node) {
 }
 
@@ -52,7 +49,7 @@ ITransfersSubscription& TransfersSyncronizer::addSubscription(const AccountSubsc
     consumer->addObserver(this);
     it = m_consumers.insert(std::make_pair(acc.keys.address.viewPublicKey, std::move(consumer))).first;
   }
-    
+
   return it->second->addSubscription(acc);
 }
 
@@ -80,6 +77,13 @@ void TransfersSyncronizer::getSubscriptions(std::vector<AccountPublicAddress>& s
 ITransfersSubscription* TransfersSyncronizer::getSubscription(const AccountPublicAddress& acc) {
   auto it = m_consumers.find(acc.viewPublicKey);
   return (it == m_consumers.end()) ? nullptr : it->second->getSubscription(acc);
+}
+
+void TransfersSyncronizer::addPublicKeysSeen(const AccountPublicAddress& acc, const Crypto::Hash& transactionHash, const Crypto::PublicKey& outputKey) {
+  auto it = m_consumers.find(acc.viewPublicKey);
+  if (it != m_consumers.end()) {
+     it->second->addPublicKeysSeen(transactionHash, outputKey);
+  }
 }
 
 std::vector<Crypto::Hash> TransfersSyncronizer::getViewKeyKnownBlocks(const Crypto::PublicKey& publicViewKey) {
@@ -150,7 +154,7 @@ void TransfersSyncronizer::save(std::ostream& os) {
   CryptoNote::BinaryOutputStreamSerializer s(stream);
   s(const_cast<uint32_t&>(TRANSFERS_STORAGE_ARCHIVE_VERSION), "version");
 
-  size_t subscriptionCount = m_consumers.size();
+  uint64_t subscriptionCount = m_consumers.size();
 
   s.beginArray(subscriptionCount, "consumers");
 
@@ -164,10 +168,10 @@ void TransfersSyncronizer::save(std::ostream& os) {
 
     std::string blob = consumerState.str();
     s(blob, "state");
-    
+
     std::vector<AccountPublicAddress> subscriptions;
     consumer.second->getSubscriptions(subscriptions);
-    size_t subCount = subscriptions.size();
+    uint64_t subCount = subscriptions.size();
 
     s.beginArray(subCount, "subscriptions");
 
@@ -230,7 +234,7 @@ void TransfersSyncronizer::load(std::istream& is) {
   std::vector<ConsumerState> updatedStates;
 
   try {
-    size_t subscriptionCount = 0;
+    uint64_t subscriptionCount = 0;
     s.beginArray(subscriptionCount, "consumers");
 
     while (subscriptionCount--) {
@@ -255,7 +259,7 @@ void TransfersSyncronizer::load(std::istream& is) {
         }
 
         // load subscriptions
-        size_t subCount = 0;
+        uint64_t subCount = 0;
         s.beginArray(subCount, "subscriptions");
 
         while (subCount--) {

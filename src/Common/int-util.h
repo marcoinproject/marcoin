@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -134,37 +141,37 @@ static inline uint64_t swap64(uint64_t x) {
 #else
 #define UNUSED
 #endif
-static inline void mem_inplace_ident(void *mem UNUSED, size_t n UNUSED) { }
+static inline void mem_inplace_ident(void *mem UNUSED, uint64_t n UNUSED) { }
 #undef UNUSED
 
-static inline void mem_inplace_swap32(void *mem, size_t n) {
-  size_t i;
+static inline void mem_inplace_swap32(void *mem, uint64_t n) {
+  uint64_t i;
   for (i = 0; i < n; i++) {
     ((uint32_t *) mem)[i] = swap32(((const uint32_t *) mem)[i]);
   }
 }
-static inline void mem_inplace_swap64(void *mem, size_t n) {
-  size_t i;
+static inline void mem_inplace_swap64(void *mem, uint64_t n) {
+  uint64_t i;
   for (i = 0; i < n; i++) {
     ((uint64_t *) mem)[i] = swap64(((const uint64_t *) mem)[i]);
   }
 }
 
-static inline void memcpy_ident32(void *dst, const void *src, size_t n) {
+static inline void memcpy_ident32(void *dst, const void *src, uint64_t n) {
   memcpy(dst, src, 4 * n);
 }
-static inline void memcpy_ident64(void *dst, const void *src, size_t n) {
+static inline void memcpy_ident64(void *dst, const void *src, uint64_t n) {
   memcpy(dst, src, 8 * n);
 }
 
-static inline void memcpy_swap32(void *dst, const void *src, size_t n) {
-  size_t i;
+static inline void memcpy_swap32(void *dst, const void *src, uint64_t n) {
+  uint64_t i;
   for (i = 0; i < n; i++) {
     ((uint32_t *) dst)[i] = swap32(((const uint32_t *) src)[i]);
   }
 }
-static inline void memcpy_swap64(void *dst, const void *src, size_t n) {
-  size_t i;
+static inline void memcpy_swap64(void *dst, const void *src, uint64_t n) {
+  uint64_t i;
   for (i = 0; i < n; i++) {
     ((uint64_t *) dst)[i] = swap64(((const uint64_t *) src)[i]);
   }

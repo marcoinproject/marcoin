@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -24,7 +31,6 @@ enum WalletErrorCodes {
   WRONG_PASSWORD,
   INTERNAL_WALLET_ERROR,
   MIXIN_COUNT_TOO_BIG,
-MIXIN_COUNT_TOO_SMALL,
   BAD_ADDRESS,
   TRANSACTION_SIZE_TOO_BIG,
   WRONG_AMOUNT,
@@ -48,7 +54,11 @@ MIXIN_COUNT_TOO_SMALL,
   DESTINATION_ADDRESS_REQUIRED,
   DESTINATION_ADDRESS_NOT_FOUND,
   BAD_PAYMENT_ID,
-  BAD_TRANSACTION_EXTRA
+  BAD_TRANSACTION_EXTRA,
+  MIXIN_BELOW_THRESHOLD,
+  MIXIN_ABOVE_THRESHOLD,
+  CONFLICTING_PAYMENT_IDS,
+  EXTRA_TOO_LARGE,
 };
 
 // custom category:
@@ -67,14 +77,13 @@ public:
   virtual std::string message(int ev) const override {
     switch (ev) {
     case NOT_INITIALIZED:               return "Object was not initialized";
-    case WRONG_PASSWORD:                return "The password is wrong or wallet file is corrupt. Consider restoring from a backup.";
+    case WRONG_PASSWORD:                return "The password is wrong";
     case ALREADY_INITIALIZED:           return "The object is already initialized";
     case INTERNAL_WALLET_ERROR:         return "Internal error occurred";
-  case MIXIN_COUNT_TOO_SMALL:           return "MixIn count is below the required minimum";
     case MIXIN_COUNT_TOO_BIG:           return "MixIn count is too big";
     case BAD_ADDRESS:                   return "Bad address";
-    case TRANSACTION_SIZE_TOO_BIG:      return "Transaction size is too big, increase the fee";
-    case WRONG_AMOUNT:                  return "Not enough funds or problem with amount";
+    case TRANSACTION_SIZE_TOO_BIG:      return "Transaction size is too big";
+    case WRONG_AMOUNT:                  return "Wrong amount";
     case SUM_OVERFLOW:                  return "Sum overflow";
     case ZERO_DESTINATION:              return "The destination is empty";
     case TX_CANCEL_IMPOSSIBLE:          return "Impossible to cancel transaction";
@@ -96,6 +105,10 @@ public:
     case DESTINATION_ADDRESS_NOT_FOUND: return "Destination address not found";
     case BAD_PAYMENT_ID:                return "Wrong payment id format";
     case BAD_TRANSACTION_EXTRA:         return "Wrong transaction extra format";
+    case MIXIN_BELOW_THRESHOLD:         return "Mixin below minimum allowed threshold";
+    case MIXIN_ABOVE_THRESHOLD:         return "Mixin above maximum allowed threshold";
+    case CONFLICTING_PAYMENT_IDS:       return "Multiple conflicting payment ID's were specified via the use of integrated addresses";
+    case EXTRA_TOO_LARGE:               return "Transaction extra too large";
     default:                            return "Unknown error";
     }
   }
@@ -110,11 +123,4 @@ private:
 
 inline std::error_code make_error_code(CryptoNote::error::WalletErrorCodes e) {
   return std::error_code(static_cast<int>(e), CryptoNote::error::WalletErrorCategory::INSTANCE);
-}
-
-namespace std {
-
-template <>
-struct is_error_code_enum<CryptoNote::error::WalletErrorCodes>: public true_type {};
-
 }

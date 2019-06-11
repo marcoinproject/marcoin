@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BlockchainWriteBatch.h"
 
@@ -38,7 +45,6 @@ BlockchainWriteBatch& BlockchainWriteBatch::insertCachedTransaction(const Extend
 }
 
 BlockchainWriteBatch& BlockchainWriteBatch::insertPaymentId(const Crypto::Hash& transactionHash, const Crypto::Hash paymentId, uint32_t totalTxsCountForPaymentId) {
-  assert(totalTxsCountForPaymentId > 0);
   rawDataToInsert.emplace_back(DB::serialize(DB::PAYMENT_ID_TO_TX_HASH_PREFIX, paymentId, totalTxsCountForPaymentId));
   rawDataToInsert.emplace_back(DB::serialize(DB::PAYMENT_ID_TO_TX_HASH_PREFIX, std::make_pair(paymentId, totalTxsCountForPaymentId - 1), transactionHash));
   return *this;
@@ -151,16 +157,6 @@ BlockchainWriteBatch& BlockchainWriteBatch::removeClosestTimestampBlockIndex(uin
 
 BlockchainWriteBatch& BlockchainWriteBatch::removeTimestamp(uint64_t timestamp) {
   rawKeysToRemove.emplace_back(DB::serializeKey(DB::TIMESTAMP_TO_BLOCKHASHES_PREFIX, timestamp));
-  return *this;
-}
-
-BlockchainWriteBatch& BlockchainWriteBatch::removeKeyOutputAmounts(uint32_t keyOutputAmountsToRemoveCount, uint32_t totalKeyOutputAmountsCount) {
-  rawKeysToRemove.reserve(rawKeysToRemove.size() + keyOutputAmountsToRemoveCount);
-  rawDataToInsert.emplace_back(DB::serialize(DB::KEY_OUTPUT_AMOUNTS_COUNT_PREFIX, DB::KEY_OUTPUT_AMOUNTS_COUNT_KEY, totalKeyOutputAmountsCount));
-  for (uint32_t i = 0; i < keyOutputAmountsToRemoveCount; ++i) {
-    rawKeysToRemove.emplace_back(DB::serializeKey(DB::KEY_OUTPUT_AMOUNTS_COUNT_PREFIX, totalKeyOutputAmountsCount + i));
-  }
-
   return *this;
 }
 

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+HASH=$1
+
+curl --silent 'http://blocks.marcoinproject.com/daemon/json_rpc' --data '{"jsonrpc":"2.0","id":"test","method":"f_transaction_json","params":{"hash":"'"$HASH"'"}}' --compressed | jq '.result.tx.extra' | xxd -r -p
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -92,7 +99,6 @@ public:
   const std::pair<uint32_t, bool>& getLastBlockIndex() const;
   const std::unordered_map<uint64_t, uint32_t>& getClosestTimestampBlockIndex() const;
   uint32_t getKeyOutputAmountsCount() const;
-  const std::unordered_map<uint32_t, IBlockchainCache::Amount>& getKeyOutputAmounts() const;
   const std::unordered_map<Crypto::Hash, uint32_t>& getTransactionCountByPaymentIds() const;
   const std::unordered_map<std::pair<Crypto::Hash, uint32_t>, Crypto::Hash>& getTransactionHashesByPaymentIds() const;
   const std::unordered_map<uint64_t, std::vector<Crypto::Hash> >& getBlockHashesByTimestamp() const;
@@ -111,16 +117,17 @@ public:
   BlockchainReadBatch& requestSpentKeyImagesByBlock(uint32_t blockIndex);
   BlockchainReadBatch& requestBlockIndexBySpentKeyImage(const Crypto::KeyImage& keyImage);
   BlockchainReadBatch& requestCachedTransaction(const Crypto::Hash& txHash);
+  BlockchainReadBatch& requestCachedTransactions(const std::vector<Crypto::Hash> &transactions);
   BlockchainReadBatch& requestTransactionHashesByBlock(uint32_t blockIndex);
   BlockchainReadBatch& requestCachedBlock(uint32_t blockIndex);
   BlockchainReadBatch& requestBlockIndexByBlockHash(const Crypto::Hash& blockHash);
   BlockchainReadBatch& requestKeyOutputGlobalIndexesCountForAmount(IBlockchainCache::Amount amount);
   BlockchainReadBatch& requestKeyOutputGlobalIndexForAmount(IBlockchainCache::Amount amount, uint32_t outputIndexWithinAmout);
   BlockchainReadBatch& requestRawBlock(uint32_t blockIndex);
+  BlockchainReadBatch& requestRawBlocks(uint64_t startHeight, uint64_t endHeight);
   BlockchainReadBatch& requestLastBlockIndex();
   BlockchainReadBatch& requestClosestTimestampBlockIndex(uint64_t timestamp);
   BlockchainReadBatch& requestKeyOutputAmountsCount();
-  BlockchainReadBatch& requestKeyOutputAmount(uint32_t index);
   BlockchainReadBatch& requestTransactionCountByPaymentId(const Crypto::Hash& paymentId);
   BlockchainReadBatch& requestTransactionHashByPaymentId(const Crypto::Hash& paymentId, uint32_t transactionIndexWithinPaymentId);
   BlockchainReadBatch& requestBlockHashesByTimestamp(uint64_t timestamp);

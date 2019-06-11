@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2018-2019, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Marcoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Marcoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Marcoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -54,7 +61,6 @@ public:
   virtual Crypto::Hash getTransactionHash() const = 0;
   virtual Crypto::Hash getTransactionPrefixHash() const = 0;
   virtual Crypto::PublicKey getTransactionPublicKey() const = 0;
-  virtual bool getTransactionSecretKey(Crypto::SecretKey& key) const = 0;
   virtual uint64_t getUnlockTime() const = 0;
 
   // extra
@@ -78,11 +84,6 @@ public:
   virtual size_t getRequiredSignaturesCount(size_t inputIndex) const = 0;
   virtual bool findOutputsToAccount(const AccountPublicAddress& addr, const Crypto::SecretKey& viewSecretKey, std::vector<uint32_t>& outs, uint64_t& outputAmount) const = 0;
 
-  // various checks
-  virtual bool validateInputs() const = 0;
-  virtual bool validateOutputs() const = 0;
-  virtual bool validateSignatures() const = 0;
-
   // serialized transaction
   virtual BinaryArray getTransactionData() const = 0;
 };
@@ -99,7 +100,6 @@ public:
   virtual void setUnlockTime(uint64_t unlockTime) = 0;
 
   // extra
-  virtual void setPaymentId(const Crypto::Hash& paymentId) = 0;
   virtual void setExtraNonce(const BinaryArray& nonce) = 0;
   virtual void appendExtra(const BinaryArray& extraData) = 0;
 
@@ -109,9 +109,6 @@ public:
 
   virtual size_t addOutput(uint64_t amount, const AccountPublicAddress& to) = 0;
   virtual size_t addOutput(uint64_t amount, const KeyOutput& out) = 0;
-
-  // transaction info
-  virtual void setTransactionSecretKey(const Crypto::SecretKey& key) = 0;
 
   // signing
   virtual void signInputKey(size_t input, const TransactionTypes::InputKeyInfo& info, const KeyPair& ephKeys) = 0;

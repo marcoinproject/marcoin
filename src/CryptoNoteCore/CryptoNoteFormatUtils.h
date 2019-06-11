@@ -1,22 +1,29 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include <boost/utility/value_init.hpp>
 
 #include "CryptoNoteBasic.h"
-#include "CryptoNoteSerialization.h"
 
 #include "Serialization/BinaryOutputStreamSerializer.h"
 #include "Serialization/BinaryInputStreamSerializer.h"
+#include "Serialization/CryptoNoteSerialization.h"
 
 namespace Logging {
 class ILogger;
@@ -24,59 +31,24 @@ class ILogger;
 
 namespace CryptoNote {
 
-bool parseAndValidateTransactionFromBinaryArray(const BinaryArray& transactionBinaryArray, Transaction& transaction, Crypto::Hash& transactionHash, Crypto::Hash& transactionPrefixHash);
-
-struct TransactionSourceEntry {
-  typedef std::pair<uint32_t, Crypto::PublicKey> OutputEntry;
-
-  std::vector<OutputEntry> outputs;           //index + key
-  size_t realOutput;                          //index in outputs vector of real output_entry
-  Crypto::PublicKey realTransactionPublicKey; //incoming real tx public key
-  size_t realOutputIndexInTransaction;        //index in transaction outputs vector
-  uint64_t amount;                            //money
-};
-
-struct TransactionDestinationEntry {
-  uint64_t amount;                    //money
-  AccountPublicAddress addr;          //destination address
-
-  TransactionDestinationEntry() : amount(0), addr(boost::value_initialized<AccountPublicAddress>()) {}
-  TransactionDestinationEntry(uint64_t amount, const AccountPublicAddress &addr) : amount(amount), addr(addr) {}
-};
-
-
-bool constructTransaction(
-  const AccountKeys& senderAccountKeys,
-  const std::vector<TransactionSourceEntry>& sources,
-  const std::vector<TransactionDestinationEntry>& destinations,
-  std::vector<uint8_t> extra, Transaction& transaction, uint64_t unlock_time, Logging::ILogger& log);
-
-
-bool is_out_to_acc(const AccountKeys& acc, const KeyOutput& out_key, const Crypto::PublicKey& tx_pub_key, size_t keyIndex);
 bool is_out_to_acc(const AccountKeys& acc, const KeyOutput& out_key, const Crypto::KeyDerivation& derivation, size_t keyIndex);
 bool lookup_acc_outs(const AccountKeys& acc, const Transaction& tx, const Crypto::PublicKey& tx_pub_key, std::vector<size_t>& outs, uint64_t& money_transfered);
 bool lookup_acc_outs(const AccountKeys& acc, const Transaction& tx, std::vector<size_t>& outs, uint64_t& money_transfered);
 bool get_tx_fee(const Transaction& tx, uint64_t & fee);
 uint64_t get_tx_fee(const Transaction& tx);
 bool generate_key_image_helper(const AccountKeys& ack, const Crypto::PublicKey& tx_public_key, size_t real_output_index, KeyPair& in_ephemeral, Crypto::KeyImage& ki);
-
-bool get_block_hashing_blob(const BlockTemplate& block_template, BinaryArray& blob);
-void get_tx_tree_hash(const std::vector<Crypto::Hash>& tx_hashes, Crypto::Hash& h);
-Crypto::Hash get_tx_tree_hash(const std::vector<Crypto::Hash>& tx_hashes);
-Crypto::Hash get_tx_tree_hash(const BlockTemplate& block_template);
-
-bool getInputsMoneyAmount(const Transaction& tx, uint64_t& money);
 bool checkInputTypesSupported(const TransactionPrefix& tx);
 bool checkOutsValid(const TransactionPrefix& tx, std::string* error = nullptr);
-bool checkMoneyOverflow(const TransactionPrefix &tx);
 bool checkInputsOverflow(const TransactionPrefix &tx);
 bool checkOutsOverflow(const TransactionPrefix& tx);
-uint64_t get_outs_money_amount(const Transaction& tx);
-std::string short_hash_str(const Crypto::Hash& h);
 
 std::vector<uint32_t> relativeOutputOffsetsToAbsolute(const std::vector<uint32_t>& off);
 std::vector<uint32_t> absolute_output_offsets_to_relative(const std::vector<uint32_t>& off);
 
+uint64_t getInputAmount(const Transaction& transaction);
+std::vector<uint64_t> getInputsAmounts(const Transaction& transaction);
+uint64_t getOutputAmount(const Transaction& transaction);
+void decomposeAmount(uint64_t amount, uint64_t dustThreshold, std::vector<uint64_t>& decomposedAmounts);
 
 // 62387455827 -> 455827 + 7000000 + 80000000 + 300000000 + 2000000000 + 60000000000, where 455827 <= dust_threshold
 template<typename chunk_handler_t, typename dust_handler_t>

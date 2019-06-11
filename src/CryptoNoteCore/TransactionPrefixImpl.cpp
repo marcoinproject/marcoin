@@ -1,22 +1,30 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ITransaction.h"
 
 #include <numeric>
 #include <system_error>
+#include <memory>
 
 #include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "CryptoNoteCore/TransactionApiExtra.h"
 #include "TransactionUtils.h"
-#include "CryptoNoteCore/CryptoNoteTools.h"
+#include "Common/CryptoNoteTools.h"
 
 using namespace Crypto;
 
@@ -55,15 +63,8 @@ public:
   virtual size_t getRequiredSignaturesCount(size_t inputIndex) const override;
   virtual bool findOutputsToAccount(const AccountPublicAddress& addr, const SecretKey& viewSecretKey, std::vector<uint32_t>& outs, uint64_t& outputAmount) const override;
 
-  // various checks
-  virtual bool validateInputs() const override;
-  virtual bool validateOutputs() const override;
-  virtual bool validateSignatures() const override;
-
   // serialized transaction
   virtual BinaryArray getTransactionData() const override;
-
-  virtual bool getTransactionSecretKey(SecretKey& key) const override;
 
 private:
   TransactionPrefix m_txPrefix;
@@ -90,7 +91,7 @@ Hash TransactionPrefixImpl::getTransactionPrefixHash() const {
 }
 
 PublicKey TransactionPrefixImpl::getTransactionPublicKey() const {
-  Crypto::PublicKey pk(NULL_PUBLIC_KEY);
+  Crypto::PublicKey pk(Constants::NULL_PUBLIC_KEY);
   m_extra.getPublicKey(pk);
   return pk;
 }
@@ -172,31 +173,9 @@ bool TransactionPrefixImpl::findOutputsToAccount(const AccountPublicAddress& add
   return ::CryptoNote::findOutputsToAccount(m_txPrefix, addr, viewSecretKey, outs, outputAmount);
 }
 
-bool TransactionPrefixImpl::validateInputs() const {
-  return
-    checkInputTypesSupported(m_txPrefix) &&
-    checkInputsOverflow(m_txPrefix) &&
-    checkInputsKeyimagesDiff(m_txPrefix);
-}
-
-bool TransactionPrefixImpl::validateOutputs() const {
-  return
-    checkOutsValid(m_txPrefix) &&
-    checkOutsOverflow(m_txPrefix);
-}
-
-bool TransactionPrefixImpl::validateSignatures() const {
-  throw std::system_error(std::make_error_code(std::errc::function_not_supported), "Validating signatures is not supported for transaction prefix");
-}
-
 BinaryArray TransactionPrefixImpl::getTransactionData() const {
   return toBinaryArray(m_txPrefix);
 }
-
-bool TransactionPrefixImpl::getTransactionSecretKey(SecretKey& key) const {
-  return false;
-}
-
 
 std::unique_ptr<ITransactionReader> createTransactionPrefix(const TransactionPrefix& prefix, const Hash& transactionHash) {
   return std::unique_ptr<ITransactionReader> (new TransactionPrefixImpl(prefix, transactionHash));

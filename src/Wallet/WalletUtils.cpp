@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "WalletUtils.h"
 
@@ -15,6 +22,26 @@
 #include "Wallet/WalletErrors.h"
 
 namespace CryptoNote {
+
+uint64_t getDefaultMixinByHeight(const uint64_t height)
+{
+    if (height >= CryptoNote::parameters::MIXIN_LIMITS_V3_HEIGHT)
+    {
+        return CryptoNote::parameters::DEFAULT_MIXIN_V3;
+    }
+    if (height >= CryptoNote::parameters::MIXIN_LIMITS_V2_HEIGHT)
+    {
+        return CryptoNote::parameters::DEFAULT_MIXIN_V2;
+    }
+    else if (height >= CryptoNote::parameters::MIXIN_LIMITS_V1_HEIGHT)
+    {
+        return CryptoNote::parameters::DEFAULT_MIXIN_V1;
+    }
+    else
+    {
+        return CryptoNote::parameters::DEFAULT_MIXIN_V0;
+    }
+}
 
 void throwIfKeysMismatch(const Crypto::SecretKey& secretKey, const Crypto::PublicKey& expectedPublicKey, const std::string& message) {
   Crypto::PublicKey pub;

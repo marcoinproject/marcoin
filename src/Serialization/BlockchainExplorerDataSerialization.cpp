@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BlockchainExplorerDataSerialization.h"
 
@@ -15,8 +22,7 @@
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
-#include "CryptoNoteCore/CryptoNoteSerialization.h"
-
+#include "Serialization/CryptoNoteSerialization.h"
 #include "Serialization/SerializationOverloads.h"
 
 namespace CryptoNote {
@@ -131,24 +137,24 @@ void serialize(TransactionDetails& transaction, ISerializer& serializer) {
 
   //serializer(transaction.signatures, "signatures");
   if (serializer.type() == ISerializer::OUTPUT) {
-    std::vector<std::pair<size_t, Crypto::Signature>> signaturesForSerialization;
+    std::vector<std::pair<uint64_t, Crypto::Signature>> signaturesForSerialization;
     signaturesForSerialization.reserve(transaction.signatures.size());
-    size_t ctr = 0;
+    uint64_t ctr = 0;
     for (const auto& signaturesV : transaction.signatures) {
       for (auto signature : signaturesV) {
         signaturesForSerialization.emplace_back(ctr, std::move(signature));
       }
       ++ctr;
     }
-    size_t size = transaction.signatures.size();
+    uint64_t size = transaction.signatures.size();
     serializer(size, "signaturesSize");
     serializer(signaturesForSerialization, "signatures");
   } else {
-    size_t size = 0;
+    uint64_t size = 0;
     serializer(size, "signaturesSize");
     transaction.signatures.resize(size);
 
-    std::vector<std::pair<size_t, Crypto::Signature>> signaturesForSerialization;
+    std::vector<std::pair<uint64_t, Crypto::Signature>> signaturesForSerialization;
     serializer(signaturesForSerialization, "signatures");
 
     for (const auto& signatureWithIndex : signaturesForSerialization) {
@@ -173,7 +179,10 @@ void serialize(BlockDetails& block, ISerializer& serializer) {
   serializer(block.alreadyGeneratedCoins, "alreadyGeneratedCoins");
   serializer(block.alreadyGeneratedTransactions, "alreadyGeneratedTransactions");
   serializer(block.sizeMedian, "sizeMedian");
+  /* Some serializers don't support doubles, which causes this to fail and
+     not serialize the whole object
   serializer(block.penalty, "penalty");
+  */
   serializer(block.totalFeeAmount, "totalFeeAmount");
   serializer(block.transactions, "transactions");
 }

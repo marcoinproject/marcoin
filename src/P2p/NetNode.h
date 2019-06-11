@@ -1,18 +1,15 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+// Copyright (c) 2019, The CyprusCoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
 #include <functional>
 #include <unordered_map>
 
+#include <boost/uuid/uuid.hpp>
 #include <boost/functional/hash.hpp>
 
 #include <System/Context.h>
@@ -23,9 +20,8 @@
 #include <System/TcpConnection.h>
 #include <System/TcpListener.h>
 
-#include "CryptoNoteCore/OnceInInterval.h"
+#include "P2p/OnceInInterval.h"
 #include "CryptoNoteProtocol/CryptoNoteProtocolHandler.h"
-#include "Common/CommandLine.h"
 #include "Logging/LoggerRef.h"
 
 #include "ConnectionContext.h"
@@ -33,7 +29,6 @@
 #include "NetNodeCommon.h"
 #include "NetNodeConfig.h"
 #include "P2pProtocolDefinitions.h"
-#include "P2pNetworks.h"
 #include "PeerListManager.h"
 
 namespace System {
@@ -76,10 +71,10 @@ namespace CryptoNote
     using TimePoint = Clock::time_point;
 
     System::Context<void>* context;
-    PeerIdType peerId;
+    uint64_t peerId;
     System::TcpConnection connection;
 
-    P2pConnectionContext(System::Dispatcher& dispatcher, Logging::ILogger& log, System::TcpConnection&& conn) :
+    P2pConnectionContext(System::Dispatcher& dispatcher, std::shared_ptr<Logging::ILogger> log, System::TcpConnection&& conn) :
       context(nullptr),
       peerId(0),
       connection(std::move(conn)),
@@ -116,10 +111,7 @@ namespace CryptoNote
   class NodeServer :  public IP2pEndpoint
   {
   public:
-
-    static void init_options(boost::program_options::options_description& desc);
-
-    NodeServer(System::Dispatcher& dispatcher, CryptoNote::CryptoNoteProtocolHandler& payload_handler, Logging::ILogger& log);
+    NodeServer(System::Dispatcher& dispatcher, CryptoNote::CryptoNoteProtocolHandler& payload_handler, std::shared_ptr<Logging::ILogger> log);
 
     bool run();
     bool init(const NetNodeConfig& config);
@@ -136,7 +128,7 @@ namespace CryptoNote
     virtual uint64_t get_connections_count() override;
     size_t get_outgoing_connections_count();
 
-    CryptoNote::PeerlistManager& getPeerlistManager() { return m_peerlist; }
+    PeerlistManager& getPeerlistManager() { return m_peerlist; }
 
   private:
 
@@ -146,16 +138,16 @@ namespace CryptoNote
     int handle_handshake(int command, COMMAND_HANDSHAKE::request& arg, COMMAND_HANDSHAKE::response& rsp, P2pConnectionContext& context);
     int handle_timed_sync(int command, COMMAND_TIMED_SYNC::request& arg, COMMAND_TIMED_SYNC::response& rsp, P2pConnectionContext& context);
     int handle_ping(int command, COMMAND_PING::request& arg, COMMAND_PING::response& rsp, P2pConnectionContext& context);
-
-	
-	
-	
-	
+#ifdef ALLOW_DEBUG_COMMANDS
+    int handle_get_stat_info(int command, COMMAND_REQUEST_STAT_INFO::request& arg, COMMAND_REQUEST_STAT_INFO::response& rsp, P2pConnectionContext& context);
+    int handle_get_network_state(int command, COMMAND_REQUEST_NETWORK_STATE::request& arg, COMMAND_REQUEST_NETWORK_STATE::response& rsp, P2pConnectionContext& context);
+    int handle_get_peer_id(int command, COMMAND_REQUEST_PEER_ID::request& arg, COMMAND_REQUEST_PEER_ID::response& rsp, P2pConnectionContext& context);
+    bool check_trust(const proof_of_trust& tr);
+#endif
 
     bool init_config();
     bool make_default_config();
     bool store_config();
-
     void initUpnp();
 
     bool handshake(CryptoNote::LevinProtocol& proto, P2pConnectionContext& context, bool just_take_peerlist = false);
@@ -167,13 +159,13 @@ namespace CryptoNote
     void on_connection_close(P2pConnectionContext& context);
 
     //----------------- i_p2p_endpoint -------------------------------------------------------------
-    virtual void relay_notify_to_all(int command, const BinaryArray& data_buff, const net_connection_id* excludeConnection) override;
+    virtual void relay_notify_to_all(int command, const BinaryArray& data_buff, const boost::uuids::uuid* excludeConnection) override;
     virtual bool invoke_notify_to_peer(int command, const BinaryArray& req_buff, const CryptoNoteConnectionContext& context) override;
-    virtual void for_each_connection(std::function<void(CryptoNote::CryptoNoteConnectionContext&, PeerIdType)> f) override;
-    virtual void externalRelayNotifyToAll(int command, const BinaryArray& data_buff) override;
+    virtual void for_each_connection(std::function<void(CryptoNote::CryptoNoteConnectionContext&, uint64_t)> f) override;
+    virtual void externalRelayNotifyToAll(int command, const BinaryArray& data_buff, const boost::uuids::uuid* excludeConnection) override;
+    virtual void externalRelayNotifyToList(int command, const BinaryArray& data_buff, const std::list<boost::uuids::uuid> relayList) override;
 
     //-----------------------------------------------------------------------------------------------
-    bool handle_command_line(const boost::program_options::variables_map& vm);
     bool handleConfig(const NetNodeConfig& config);
     bool append_net_address(std::vector<NetworkAddress>& nodes, const std::string& addr);
     bool idle_worker();
@@ -190,12 +182,8 @@ namespace CryptoNote
     bool is_addr_connected(const NetworkAddress& peer);  
     bool try_ping(basic_node_data& node_data, P2pConnectionContext& context);
     bool make_expected_connections_count(bool white_list, size_t expected_connections);
-    bool is_priority_node(const NetworkAddress& na);
 
     bool connect_to_peerlist(const std::vector<NetworkAddress>& peers);
-
-    bool parse_peers_and_add_to_container(const boost::program_options::variables_map& vm, 
-      const command_line::arg_descriptor<std::vector<std::string> > & arg, std::vector<NetworkAddress>& container);
 
     //debug functions
     std::string print_connections_container();
@@ -236,6 +224,7 @@ namespace CryptoNote
     bool m_allow_local_ip;
     bool m_hide_my_port;
     std::string m_p2p_state_filename;
+    bool m_p2p_state_reset;
 
     System::Dispatcher& m_dispatcher;
     System::ContextGroup m_workingContextGroup;
@@ -256,9 +245,9 @@ namespace CryptoNote
 
     std::string m_bind_ip;
     std::string m_port;
-
+#ifdef ALLOW_DEBUG_COMMANDS
     uint64_t m_last_stat_request_time;
-
+#endif
     std::vector<NetworkAddress> m_priority_peers;
     std::vector<NetworkAddress> m_exclusive_peers;
     std::vector<NetworkAddress> m_seed_nodes;

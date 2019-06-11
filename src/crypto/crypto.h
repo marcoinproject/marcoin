@@ -1,12 +1,9 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2016-2018, The Karbowanec developers
+// Copyright (c) 2018, The Marcoin Developers
+// 
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
@@ -18,16 +15,9 @@
 
 #include <CryptoTypes.h>
 
-#include "generic-ops.h"
 #include "hash.h"
 
 namespace Crypto {
-
-  extern "C" {
-#include "random.h"
-  }
-
-  extern std::mutex random_lock;
 
 struct EllipticCurvePoint {
   uint8_t data[32];
@@ -45,6 +35,10 @@ struct EllipticCurveScalar {
 
     static void generate_keys(PublicKey &, SecretKey &);
     friend void generate_keys(PublicKey &, SecretKey &);
+	static void generate_deterministic_keys(PublicKey &pub, SecretKey &sec, SecretKey& second);
+	friend void generate_deterministic_keys(PublicKey &pub, SecretKey &sec, SecretKey& second);
+	static SecretKey generate_m_keys(PublicKey &pub, SecretKey &sec, const SecretKey& recovery_key = SecretKey(), bool recover = false);
+	friend SecretKey generate_m_keys(PublicKey &pub, SecretKey &sec, const SecretKey& recovery_key, bool recover);
     static bool check_key(const PublicKey &);
     friend bool check_key(const PublicKey &);
     static bool secret_key_to_public_key(const SecretKey &, PublicKey &);
@@ -58,8 +52,6 @@ struct EllipticCurveScalar {
     //hack for pg
     static bool underive_public_key_and_get_scalar(const KeyDerivation &, std::size_t, const PublicKey &, PublicKey &, EllipticCurveScalar &);
     friend bool underive_public_key_and_get_scalar(const KeyDerivation &, std::size_t, const PublicKey &, PublicKey &, EllipticCurveScalar &);
-    static void generate_incomplete_key_image(const PublicKey &, EllipticCurvePoint &);
-    friend void generate_incomplete_key_image(const PublicKey &, EllipticCurvePoint &);
     //
     static void derive_secret_key(const KeyDerivation &, size_t, const SecretKey &, SecretKey &);
     friend void derive_secret_key(const KeyDerivation &, size_t, const SecretKey &, SecretKey &);
@@ -79,59 +71,44 @@ struct EllipticCurveScalar {
     friend KeyImage scalarmultKey(const KeyImage & P, const KeyImage & a);
     static void hash_data_to_ec(const uint8_t*, std::size_t, PublicKey&);
     friend void hash_data_to_ec(const uint8_t*, std::size_t, PublicKey&);
-    static void generate_ring_signature(const Hash &, const KeyImage &,
-      const PublicKey *const *, size_t, const SecretKey &, size_t, Signature *);
-    friend void generate_ring_signature(const Hash &, const KeyImage &,
-      const PublicKey *const *, size_t, const SecretKey &, size_t, Signature *);
-    static bool check_ring_signature(const Hash &, const KeyImage &,
-      const PublicKey *const *, size_t, const Signature *, bool);
-    friend bool check_ring_signature(const Hash &, const KeyImage &,
-      const PublicKey *const *, size_t, const Signature *, bool);
-  };
 
-  /* Generate a value filled with random bytes.
-   */
-  template<typename T>
-  typename std::enable_if<std::is_pod<T>::value, T>::type rand() {
-    typename std::remove_cv<T>::type res;
-    std::lock_guard<std::mutex> lock(random_lock);
-    generate_random_bytes(sizeof(T), &res);
-    return res;
-  }
+    public:
 
-  /* Random number engine based on Crypto::rand()
-   */
-  template <typename T>
-  class random_engine {
-  public:
-    typedef T result_type;
+        static std::tuple<bool, std::vector<Signature>> generateRingSignatures(
+            const Hash prefixHash,
+            const KeyImage keyImage,
+            const std::vector<PublicKey> publicKeys,
+            const Crypto::SecretKey transactionSecretKey,
+            uint64_t realOutput);
 
-#ifdef __clang__
-    constexpr static T min() {
-      return (std::numeric_limits<T>::min)();
-    }
+        static bool checkRingSignature(
+            const Hash &prefix_hash,
+            const KeyImage &image,
+            const std::vector<PublicKey> pubs,
+            const std::vector<Signature> signatures);
 
-    constexpr static T max() {
-      return (std::numeric_limits<T>::max)();
-    }
-#else
-    static T(min)() {
-      return (std::numeric_limits<T>::min)();
-    }
+        static void generateViewFromSpend(
+            const Crypto::SecretKey &spend,
+            Crypto::SecretKey &viewSecret);
 
-    static T(max)() {
-      return (std::numeric_limits<T>::max)();
-    }
-#endif
-    typename std::enable_if<std::is_unsigned<T>::value, T>::type operator()() {
-      return rand<T>();
-    }
+        static void generateViewFromSpend(
+            const Crypto::SecretKey &spend,
+            Crypto::SecretKey &viewSecret,
+            Crypto::PublicKey &viewPublic);
   };
 
   /* Generate a new key pair
    */
   inline void generate_keys(PublicKey &pub, SecretKey &sec) {
     crypto_ops::generate_keys(pub, sec);
+  }
+
+  inline void generate_deterministic_keys(PublicKey &pub, SecretKey &sec, SecretKey& second) {
+    crypto_ops::generate_deterministic_keys(pub, sec, second);
+  }
+
+  inline SecretKey generate_m_keys(PublicKey &pub, SecretKey &sec, const SecretKey& recovery_key = SecretKey(), bool recover = false) {
+    return crypto_ops::generate_m_keys(pub, sec, recovery_key, recover);
   }
 
   /* Check a public key. Returns true if it is valid, false otherwise.
@@ -221,36 +198,4 @@ struct EllipticCurveScalar {
   inline void hash_data_to_ec(const uint8_t* data, std::size_t len, PublicKey& key) {
     crypto_ops::hash_data_to_ec(data, len, key);
   }
-
-  inline void generate_ring_signature(const Hash &prefix_hash, const KeyImage &image,
-    const PublicKey *const *pubs, std::size_t pubs_count,
-    const SecretKey &sec, std::size_t sec_index,
-    Signature *sig) {
-    crypto_ops::generate_ring_signature(prefix_hash, image, pubs, pubs_count, sec, sec_index, sig);
-  }
-  inline bool check_ring_signature(const Hash &prefix_hash, const KeyImage &image,
-    const PublicKey *const *pubs, size_t pubs_count,
-    const Signature *sig, bool checkKeyImage) {
-    return crypto_ops::check_ring_signature(prefix_hash, image, pubs, pubs_count, sig, checkKeyImage);
-  }
-
-  /* Variants with vector<const PublicKey *> parameters.
-   */
-  inline void generate_ring_signature(const Hash &prefix_hash, const KeyImage &image,
-    const std::vector<const PublicKey *> &pubs,
-    const SecretKey &sec, size_t sec_index,
-    Signature *sig) {
-    generate_ring_signature(prefix_hash, image, pubs.data(), pubs.size(), sec, sec_index, sig);
-  }
-  inline bool check_ring_signature(const Hash &prefix_hash, const KeyImage &image,
-    const std::vector<const PublicKey *> &pubs,
-    const Signature *sig, bool checkKeyImage) {
-    return check_ring_signature(prefix_hash, image, pubs.data(), pubs.size(), sig, checkKeyImage);
-  }
-
 }
-
-CRYPTO_MAKE_HASHABLE(PublicKey)
-CRYPTO_MAKE_HASHABLE(KeyImage)
-CRYPTO_MAKE_COMPARABLE(Signature)
-CRYPTO_MAKE_COMPARABLE(SecretKey)

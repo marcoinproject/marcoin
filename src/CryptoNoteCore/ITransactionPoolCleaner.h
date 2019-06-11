@@ -1,12 +1,7 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+// 
+// Please see the included LICENSE file for more information.
 
 #pragma once
 
@@ -24,7 +19,7 @@ class ITransactionPoolCleanWrapper: public ITransactionPool {
 public:
   virtual ~ITransactionPoolCleanWrapper() {}
 
-  virtual std::vector<Crypto::Hash> clean() = 0;
+  virtual std::vector<Crypto::Hash> clean(const uint32_t height) = 0;
 };
 
 } //namespace CryptoNote

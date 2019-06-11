@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2018-2019, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Marcoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Marcoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Marcoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -125,14 +132,14 @@ class IWallet {
 public:
   virtual ~IWallet() {}
 
-  virtual void initialize(const std::string& path, const std::string& password) = 0;
-  virtual void initializeWithViewKey(const std::string& path, const std::string& password, const Crypto::SecretKey& viewSecretKey) = 0;
+  virtual void initializeWithViewKey(const std::string& path, const std::string& password, const Crypto::SecretKey& viewSecretKey, const uint64_t scanHeight, const bool newAddress) = 0;
   virtual void load(const std::string& path, const std::string& password, std::string& extra) = 0;
   virtual void load(const std::string& path, const std::string& password) = 0;
   virtual void shutdown() = 0;
 
   virtual void changePassword(const std::string& oldPassword, const std::string& newPassword) = 0;
   virtual void save(WalletSaveLevel saveLevel = WalletSaveLevel::SAVE_ALL, const std::string& extra = "") = 0;
+  virtual void reset(const uint64_t scanHeight) = 0;
   virtual void exportWallet(const std::string& path, bool encrypt = true, WalletSaveLevel saveLevel = WalletSaveLevel::SAVE_ALL, const std::string& extra = "") = 0;
 
   virtual size_t getAddressCount() const = 0;
@@ -140,10 +147,13 @@ public:
   virtual KeyPair getAddressSpendKey(size_t index) const = 0;
   virtual KeyPair getAddressSpendKey(const std::string& address) const = 0;
   virtual KeyPair getViewKey() const = 0;
+
   virtual std::string createAddress() = 0;
-  virtual std::string createAddress(const Crypto::SecretKey& spendSecretKey) = 0;
-  virtual std::string createAddress(const Crypto::PublicKey& spendPublicKey) = 0;
-  virtual std::vector<std::string> createAddressList(const std::vector<Crypto::SecretKey>& spendSecretKeys) = 0;
+  virtual std::string createAddress(const Crypto::SecretKey& spendSecretKey, const uint64_t scanHeight, const bool newAddress) = 0;
+  virtual std::string createAddress(const Crypto::PublicKey& spendPublicKey, const uint64_t scanHeight, const bool newAddress) = 0;
+
+  virtual std::vector<std::string> createAddressList(const std::vector<Crypto::SecretKey>& spendSecretKeys, const uint64_t scanHeight, const bool newAddress) = 0;
+
   virtual void deleteAddress(const std::string& address) = 0;
 
   virtual uint64_t getActualBalance() const = 0;
@@ -153,8 +163,6 @@ public:
 
   virtual size_t getTransactionCount() const = 0;
   virtual WalletTransaction getTransaction(size_t transactionIndex) const = 0;
-  virtual size_t getTransactionTransferCount(size_t transactionIndex) const = 0;
-  virtual WalletTransfer getTransactionTransfer(size_t transactionIndex, size_t transferIndex) const = 0;
 
   virtual WalletTransactionWithTransfers getTransaction(const Crypto::Hash& transactionHash) const = 0;
   virtual std::vector<TransactionsInBlockInfo> getTransactions(const Crypto::Hash& blockHash, size_t count) const = 0;

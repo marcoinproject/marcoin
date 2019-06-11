@@ -1,12 +1,19 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BlockchainSynchronizer.h"
 
@@ -28,10 +35,6 @@ using namespace Logging;
 namespace {
 
 const int RETRY_TIMEOUT = 5;
-
-std::ostream& operator<<(std::ostream& os, const CryptoNote::IBlockchainConsumer* consumer) {
-  return os << "0x" << std::setw(8) << std::setfill('0') << std::hex << reinterpret_cast<uintptr_t>(consumer) << std::dec << std::setfill(' ');
-}
 
 class TransactionReaderListFormatter {
 public:
@@ -65,7 +68,7 @@ private:
 
 namespace CryptoNote {
 
-BlockchainSynchronizer::BlockchainSynchronizer(INode& node, Logging::ILogger& logger, const Hash& genesisBlockHash) :
+BlockchainSynchronizer::BlockchainSynchronizer(INode& node, std::shared_ptr<Logging::ILogger> logger, const Hash& genesisBlockHash) :
   m_logger(logger, "BlockchainSynchronizer"),
   m_node(node),
   m_genesisBlockHash(genesisBlockHash),
@@ -535,9 +538,8 @@ void BlockchainSynchronizer::processBlocks(GetBlocksResponse& response) {
       if (m_node.getKnownBlockCount() != m_node.getLocalBlockCount()) {
         m_logger(DEBUGGING) << "Blockchain updated, resume blockchain synchronization";
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      } else {
-        break;
-      }
+      } 
+      break;
 
     case UpdateConsumersResult::addedNewBlocks:
       setFutureState(State::blockchainSync);
@@ -572,12 +574,14 @@ BlockchainSynchronizer::UpdateConsumersResult BlockchainSynchronizer::updateCons
       kv.second->detach(result.detachHeight);
     }
 
-    if (result.newBlockHeight == 1)
+    if (result.newBlockHeight == 1) {
       result.newBlockHeight = 0;
+    }
     if (result.hasNewBlocks) {
       uint32_t startOffset = result.newBlockHeight - interval.startHeight;
-      if (result.newBlockHeight == 0)
+    if (result.newBlockHeight == 0) {
       startOffset = 0;
+    }
       uint32_t blockCount = static_cast<uint32_t>(blocks.size()) - startOffset;
       // update consumer
       m_logger(DEBUGGING) << "Adding blocks to consumer, consumer " << kv.first << ", start index " << result.newBlockHeight << ", count " << blockCount;
@@ -648,7 +652,7 @@ void BlockchainSynchronizer::removeOutdatedTransactions() {
       }
     }
   } else {
-    m_logger(ERROR, BRIGHT_RED) << "Failed to query outdated pool transaction: " << ec << ", " << ec.message();
+    m_logger(DEBUGGING, BRIGHT_RED) << "Failed to query outdated pool transaction: " << ec << ", " << ec.message();
   }
 
   if (!ec) {

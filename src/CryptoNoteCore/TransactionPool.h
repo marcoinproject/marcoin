@@ -1,12 +1,7 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+// Copyright (c) 2018, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
 
 #pragma once
 #include <unordered_map>
@@ -29,7 +24,7 @@ namespace CryptoNote {
 
 class TransactionPool : public ITransactionPool {
 public:
-  TransactionPool(Logging::ILogger& logger);
+  TransactionPool(std::shared_ptr<Logging::ILogger> logger);
 
   virtual bool pushTransaction(CachedTransaction&& transaction, TransactionValidatorState&& transactionState) override;
   virtual const CachedTransaction& getTransaction(const Crypto::Hash& hash) const override;
@@ -41,6 +36,7 @@ public:
 
   virtual const TransactionValidatorState& getPoolTransactionValidationState() const override;
   virtual std::vector<CachedTransaction> getPoolTransactions() const override;
+  virtual std::tuple<std::vector<CachedTransaction>, std::vector<CachedTransaction>> getPoolTransactionsForBlockTemplate() const override;
 
   virtual uint64_t getTransactionReceiveTime(const Crypto::Hash& hash) const override;
   virtual std::vector<Crypto::Hash> getTransactionHashesByPaymentId(const Crypto::Hash& paymentId) const override;

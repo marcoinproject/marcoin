@@ -1,17 +1,23 @@
-/*
- * Copyright (c) 2018, The Marcoin Developers.
- * Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
- *
- * This file is part of Marcoin.
- *
- * This file is subject to the terms and conditions defined in the
- * file 'LICENSE', which is part of this source code package.
- */
+// Copyright (c) 2012-2017, The CryptoNote developers, The Marcoin developers
+//
+// This file is part of Marcoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "P2pNodeConfig.h"
-#include "P2pNetworks.h"
 
-#include <CryptoNoteConfig.h>
+#include <config/CryptoNoteConfig.h>
 
 namespace CryptoNote {
 
@@ -28,7 +34,7 @@ P2pNodeConfig::P2pNodeConfig() :
   handshakeTimeout(std::chrono::milliseconds(P2P_DEFAULT_HANDSHAKE_INVOKE_TIMEOUT)),
   connectInterval(P2P_DEFAULT_CONNECT_INTERVAL),
   connectTimeout(std::chrono::milliseconds(P2P_DEFAULT_CONNECTION_TIMEOUT)),
-  networkId(CRYPTONOTE_NETWORK),
+  networkId(CryptoNote::CRYPTONOTE_NETWORK),
   expectedOutgoingConnectionsCount(P2P_DEFAULT_CONNECTIONS_COUNT),
   whiteListConnectionsPercent(P2P_DEFAULT_WHITELIST_CONNECTIONS_PERCENT),
   peerListConnectRange(P2P_DEFAULT_CONNECT_RANGE),
@@ -76,48 +82,6 @@ size_t P2pNodeConfig::getPeerListConnectRange() const {
 
 size_t P2pNodeConfig::getPeerListGetTryCount() const {
   return peerListGetTryCount;
-}
-
-// setters
-
-void P2pNodeConfig::setTimedSyncInterval(std::chrono::nanoseconds interval) {
-  timedSyncInterval = interval;
-}
-
-void P2pNodeConfig::setHandshakeTimeout(std::chrono::nanoseconds timeout) {
-  handshakeTimeout = timeout;
-}
-
-void P2pNodeConfig::setConnectInterval(std::chrono::nanoseconds interval) {
-  connectInterval = interval;
-}
-
-void P2pNodeConfig::setConnectTimeout(std::chrono::nanoseconds timeout) {
-  connectTimeout = timeout;
-}
-
-void P2pNodeConfig::setExpectedOutgoingConnectionsCount(size_t count) {
-  expectedOutgoingConnectionsCount = count;
-}
-
-void P2pNodeConfig::setWhiteListConnectionsPercent(size_t percent) {
-  if (percent > 100) {
-    throw std::invalid_argument("whiteListConnectionsPercent cannot be greater than 100");
-  }
-
-  whiteListConnectionsPercent = percent;
-}
-
-void P2pNodeConfig::setNetworkId(const boost::uuids::uuid& id) {
-  networkId = id;
-}
-
-void P2pNodeConfig::setPeerListConnectRange(size_t range) {
-  peerListConnectRange = range;
-}
-
-void P2pNodeConfig::setPeerListGetTryCount(size_t count) {
-  peerListGetTryCount = count;
 }
 
 }
