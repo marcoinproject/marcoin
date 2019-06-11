@@ -38,7 +38,6 @@
 #include <System/Timer.h>
 
 #include <Utilities/FormatTools.h>
-#include <Utilities/LicenseCanary.h>
 #include <Utilities/Container.h>
 
 #include <unordered_set>

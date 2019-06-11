@@ -87,7 +87,7 @@ void balance(const std::shared_ptr<WalletBackend> walletBackend)
     auto [unlockedBalance, lockedBalance] = walletBackend->getTotalBalance();
 
     /* We can make a better approximation of the view wallet balance if we
-       ignore fusion transactions.
+       ignore fusion transactions.*/
 
     if (walletBackend->isViewWallet())
     {
