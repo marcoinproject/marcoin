@@ -1,42 +1,192 @@
-# Marcoin
-Marcoin command line wallet and daemon
-Copyright (c) 2018, The Marcoin Developers.
-Portions Copyright (c) 2012-2017, The CryptoNote Developers, The Bytecoin Developers.
 
-# Download Releases
-Located Here: https://github.com/marcoinproject/marcoin/releases
+### How To Compile
 
-# GUI Wallet
-Located Here: https://github.com/marcoinproject/marcoin-gui
+#### Linux
 
-# How to Compile
+##### Prerequisites
 
-sudo apt-get -y install build-essential libssl-dev libboost-all-dev<br>
-sudo apt-get -y install gcc-4.8 g++-4.8 git cmake<br>
-git clone https://github.com/marcoinproject/marcoin <br>
-cd marcoin <br>
-mkdir build ; cd build <br>
-cmake .. <br>
-make <br>
+You will need the following packages: [Boost](https://www.boost.org/), [OpenSSL](https://www.openssl.org/), cmake (3.8 or higher), make, and git.
 
-# Introduction
+You will also need either GCC/G++, or Clang.
 
-Marcoin is a private, secure, untraceable, decentralised digital currency. You are your bank, you control your funds, and nobody can trace your transfers unless you allow them to do so.
+If you are using GCC, you will need GCC-7.0 or higher.
 
-Privacy: Marcoin uses a cryptographically sound system to allow you to send and receive funds without your transactions being easily revealed on the blockchain (the ledger of transactions that everyone has). This ensures that your purchases, receipts, and all transfers remain absolutely private by default.
+If you are using Clang, you will need Clang 6.0 or higher. You will also need libstdc++\-6.0 or higher.
 
-Security: Using the power of a distributed peer-to-peer consensus network, every transaction on the network is cryptographically secured.
+##### Ubuntu, using GCC
 
-Untraceability: By taking advantage of ring signatures, a special property of a certain type of cryptography, Marcoin is able to ensure that transactions are not only untraceable, but have an optional measure of ambiguity that ensures that transactions cannot easily be tied back to an individual user or computer.
+- `sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y`
+- `sudo apt-get update`
+- `sudo apt-get install aptitude -y`
+- `sudo aptitude install -y build-essential g++-8 gcc-8 git libboost-all-dev python-pip libssl-dev`
+- `sudo pip install cmake`
+- `export CC=gcc-8`
+- `export CXX=g++-8`
+- `git clone -b master --single-branch https://github.com/marcoinproject/marcoin`
+- `cd marcoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
 
-# About this Project
+The binaries will be in the `src` folder when you are complete.
 
-This is the core implementation of Marcoin. It is open source and completely free to use without restrictions, except for those specified in the license agreement below. There are no restrictions on anyone creating an alternative implementation of Marcoin that uses the protocol and network in a compatible manner.
+- `cd src`
+- `./marcoind --version`
 
-As with many development projects, the repository on Github is considered to be the "staging" area for the latest changes. Before changes are merged into that branch on the main repository, they are tested by individual developers in their own branches, submitted as a pull request, and then subsequently tested by contributors who focus on testing and code reviews. That having been said, the repository should be carefully considered before using it in a production environment, unless there is a patch in the repository for a particular show-stopping issue you are experiencing. It is generally a better idea to use a tagged release for stability.
+##### Ubuntu, using Clang
 
-Anyone is welcome to contribute to Marcoin's codebase! If you have a fix or code change, feel free to submit it as a pull request directly to the "master" branch. In cases where the change is relatively small or does not affect other parts of the codebase it may be merged in immediately by any one of the collaborators. On the other hand, if the change is particularly large or complex, it is expected that it will be discussed at length either well in advance of the pull request being submitted, or even directly on the pull request.
+- `sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y`
+- `wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -`
 
-# License
+You need to modify the below command for your version of ubuntu - see https://apt.llvm.org/
 
-Marcoin is licensed under the "MIT License", see LICENSE for more info.
+* Ubuntu 14.04 (Trusty)
+- `sudo add-apt-repository "deb https://apt.llvm.org/trusty/ llvm-toolchain-trusty 6.0 main"`
+
+* Ubuntu 16.04 (Xenial)
+- `sudo add-apt-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial 6.0 main"`
+
+* Ubuntu 18.04 (Bionic)
+- `sudo add-apt-repository "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic 6.0 main"`
+
+- `sudo apt-get update`
+- `sudo apt-get install aptitude -y`
+- `sudo aptitude install -y -o Aptitude::ProblemResolver::SolutionCost='100*canceled-actions,200*removals' build-essential clang-6.0 libstdc++-7-dev git libboost-all-dev python-pip libssl-dev`
+- `sudo pip install cmake`
+- `export CC=clang-6.0`
+- `export CXX=clang++-6.0`
+- `git clone -b master --single-branch https://github.com/marcoinproject/marcoin`
+- `cd marcoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./marcoind --version`
+
+##### Generic Linux
+
+Ensure you have the dependencies listed above.
+
+If you want to use clang, ensure you set the environment variables `CC` and `CXX`.
+See the ubuntu instructions for an example.
+
+- `git clone -b master --single-branch https://github.com/marcoinproject/marcoin`
+- `cd marcoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./marcoind --version`
+
+#### OSX/Apple, using GCC
+
+##### Prerequisites
+
+- Install XCode and Developer Tools.
+
+##### Building
+
+- `which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+- `brew install --force cmake boost llvm gcc@8 openssl`
+- `export CC=gcc-8`
+- `export CXX=g++-8`
+- `git clone -b master --single-branch https://github.com/marcoinproject/marcoin`
+- `cd marcoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./marcoind --version`
+
+#### OSX/Apple, using Clang
+
+##### Prerequisites
+
+- Install XCode and Developer Tools.
+
+##### Building
+
+- `which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+- `brew install --force cmake boost llvm openssl`
+- `export CC=/usr/local/opt/llvm/bin/clang`
+- `export CXX=/usr/local/opt/llvm/bin/clang++`
+- `git clone -b master --single-branch https://github.com/marcoinproject/marcoin`
+- `cd marcoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./marcoind --version`
+
+
+#### Windows
+
+##### Prerequisites
+
+You can build for 32-bit or 64-bit Windows. **If you're not sure, pick 64-bit.**
+
+- Install [Visual Studio 2017 Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15&page=inlineinstall)
+- When installing Visual Studio, it is **required** that you install **Desktop development with C++**
+- Install the latest version of Boost (currently Boost 1.68). Select the appropriate version for your system:
+  - [Boost 64-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-64.exe)
+  - [Boost 32-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-32.exe)
+- Install the latest full version of OpenSSL (currently OpenSSL 1.1.1b). Select the appropriate version for your system:
+  - [OpenSSL 64-bit](https://slproweb.com/download/Win64OpenSSL-1_1_1b.exe)
+  - [OpenSSL 32-bit](https://slproweb.com/download/Win32OpenSSL-1_1_1b.exe)
+
+##### Building
+
+For 64-bit:
+- From the start menu, open 'x64 Native Tools Command Prompt for vs2017'.
+- `cd <your_marcoin_directory>`
+- `mkdir build`
+- `cd build`
+- `set PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin";%PATH%`
+- `cmake -G "Visual Studio 15 2017 Win64" .. -DBOOST_ROOT=C:/local/boost_1_68_0`
+- `MSBuild marcoin.sln /p:Configuration=Release /m`
+
+For 32-bit:
+- From the start menu, open 'x86 Native Tools Command Prompt for vs2017'.
+- `cd <your_marcoin_directory>`
+- `mkdir build`
+- `cd build`
+- `set PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin";%PATH%`
+- `cmake -G "Visual Studio 15 2017" .. -DBOOST_ROOT=C:/local/boost_1_68_0`
+- `MSBuild marcoin.sln /p:Configuration=Release /p:Platform=Win32 /m`
+
+The binaries will be in the `src/Release` folder when you are complete.
+
+- `cd src`
+- `cd Release`
+- `marcoind.exe --version`
+
+#### Thanks
+Cryptonote Developers, Bytecoin Developers, Monero Developers, Forknote Project, marcoin Community
+
+### Copypasta for license when editing files
+
+
+```
+// Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018-2019, The Marcoin Developers
+//
+// Please see the included LICENSE file for more information.
+```
