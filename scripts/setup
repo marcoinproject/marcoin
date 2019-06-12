@@ -60,7 +60,7 @@ wget https://raw.githubusercontent.com/marcoinproject/marcoin/development/LICENS
 zip marcoin-dev-bin-$(date +%F)-linux.zip miner LICENSE zedwallet marcoind marcoin-service
 
 # Create directories to keep always-up-to-date binaries for 
-# TRTL Network files. Ideally, your bashrc has aliases to run
+# H2O Network files. Ideally, your bashrc has aliases to run
 # from this folder, or you can add it to your $PATH.
 mkdir -p ~/.Crypto/{Athena,marcoin,Karai}
 mkdir ~/Binaries
