@@ -117,7 +117,7 @@ namespace Crypto {
   }
 
   // Standard CryptoNight Marcoin
-  inline void cn_Marcoin_slow_hash_v0(const void *data, size_t length, Hash &hash) {
+  inline void cn_marcoin_slow_hash_v0(const void *data, size_t length, Hash &hash) {
     cn_slow_hash(data, length, reinterpret_cast<char *>(&hash), 0, 0, 0, CN_MARCOIN_PAGE_SIZE, CN_MARCOIN_SCRATCHPAD, CN_MARCOIN_ITERATIONS);
   }
 
