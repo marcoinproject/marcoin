@@ -31,7 +31,7 @@ const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW             = 60;
 const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3          = 11;
 
 // MONEY_SUPPLY - total number coins to be generated
-const uint64_t MONEY_SUPPLY                                  = UINT64_C(84000000);
+const uint64_t MONEY_SUPPLY                                  = UINT64_C(8400000000000000);
 const uint32_t ZAWY_DIFFICULTY_BLOCK_INDEX                   = 0;
 const size_t   ZAWY_DIFFICULTY_V2                            = 1;
 const uint8_t  ZAWY_DIFFICULTY_DIFFICULTY_BLOCK_VERSION      = 0;
@@ -44,7 +44,7 @@ const unsigned EMISSION_SPEED_FACTOR                         = 20;
 static_assert(EMISSION_SPEED_FACTOR <= 8 * sizeof(uint64_t), "Bad EMISSION_SPEED_FACTOR");
 
 /* Premine amount */
-const uint64_t GENESIS_BLOCK_REWARD                          = UINT64_C(0);
+const uint64_t GENESIS_BLOCK_REWARD                          = UINT64_C(500000000000000);
 
 /* How to generate a premine:
 
@@ -66,7 +66,7 @@ marcoind --print-genesis-tx --genesis-block-reward-address h2EEkik6zP7fwQuwhU9w3
 * You should see your premine appear in the previously generated wallet.
 
 */
-const char     GENESIS_COINBASE_TX_HEX[]                     = "012801ff00010002109a223152112961e47974947a797100e9257b68be82c887a4f7a05e87bc9a612101efa14972ec33e08826c97aea819369730eba55f87db70c913a77d518dc8ea6cc";
+const char     GENESIS_COINBASE_TX_HEX[]                     = "012801ff000180808d93f5d77102266c58148d867cd2d70cada80cc5c3750e1cb75205c7cef332a7abeb0a96e278210126dfa2b3ee4e6ddc1bc84ae1f5a7fba8599d64f73eb321b363063a8d8b1dc8f0";
 static_assert(sizeof(GENESIS_COINBASE_TX_HEX)/sizeof(*GENESIS_COINBASE_TX_HEX) != 1, "GENESIS_COINBASE_TX_HEX must not be empty.");
 
 /* This is the unix timestamp of the first "mined" block (technically block 2, not the genesis block)
